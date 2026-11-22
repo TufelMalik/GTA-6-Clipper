@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env.local
+
+# Media Inputs & Outputs (keep directory structure, ignore large videos)
+input/*.mp4
+input/*.webm
+input/*.mkv
+input/*.mov
+input/*.avi
+!input/.gitkeep
+
+clips/*.mp4
+clips/*.webm
+clips/*.mkv
+clips/*.mov
+clips/*.avi
+!clips/.gitkeep
+!clips/clips.json
+
+out/*.mp4
+out/*.webm
+out/*.jpg
+out/*.jpeg
+out/*.png
+out/*.ass
+out/*.words.json
+!out/.gitkeep
+
+# System & Temporary
+.DS_Store
+Thumbs.db
+*.bak
+*.bak.*
+.idea/
+.vscode/
