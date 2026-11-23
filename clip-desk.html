@@ -1444,9 +1444,9 @@ main, .wizard-main{
             <div style="display:flex;flex-direction:column;gap:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;padding:10px 12px">
               <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
                 <label for="quick-text-size" style="font-weight:600;color:var(--tx);margin:0">On-Screen Text Size:</label>
-                <span id="quick-text-size-val" style="font-weight:700;color:var(--acc)">120px</span>
+                <span id="quick-text-size-val" style="font-weight:700;color:var(--acc)">60px</span>
               </div>
-              <input type="range" id="quick-text-size" min="60" max="180" value="120" step="2" style="width:100%;accent-color:var(--acc)">
+              <input type="range" id="quick-text-size" min="20" max="100" value="60" step="1" style="width:100%;accent-color:var(--acc)">
               
               <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;margin-top:4px">
                 <label for="quick-text-pos" style="font-weight:600;color:var(--tx);margin:0">Text Position (Top to Bottom):</label>
@@ -1763,8 +1763,8 @@ main, .wizard-main{
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:10px;font-size:11px;color:var(--mut)">
                   <span>Text Size:</span>
-                  <input type="range" id="modal-text-size-range" min="40" max="160" value="70" style="width:105px;accent-color:#ffd23f">
-                  <span id="modal-text-size-val" style="font-weight:600;color:var(--tx)">70px</span>
+                  <input type="range" id="modal-text-size-range" min="20" max="100" value="60" step="1" style="width:105px;accent-color:#ffd23f">
+                  <span id="modal-text-size-val" style="font-weight:600;color:var(--tx)">60px</span>
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:6px;font-size:11px;color:var(--mut)">
                   <span>Text Position:</span>
@@ -1906,7 +1906,7 @@ const SCHEMA=[
    ['B_FACE_FIT','Facecam Fit Mode','select','cover',['cover','contain']]
  ]],
  ['On-Screen Hook Text',null,[
-   ['MEME_SIZE','Text Size','range',120,60,180,2,'px'],
+   ['MEME_SIZE','Text Size','range',60,20,100,1,'px'],
    ['MEME_Y_PCT','Vertical Position','range',15,0,50,1,'%'],
    ['MEME_BORDER','Outline Thickness','range',10,3,16,1,'px'],
    ['MEME_SECONDS','Show Duration (0=Full)','range',0,0,10,1,'s']
@@ -2707,7 +2707,7 @@ function syncQuickControls(){
   if($('#quick-cap-style')) $('#quick-cap-style').value = V.CAP_STYLE || 'auto';
   if($('#quick-cap-upper-check')) $('#quick-cap-upper-check').checked = (V.CAP_UPPER === 'yes');
   if($('#quick-text-size')){
-    $('#quick-text-size').value = +V.MEME_SIZE || 120;
+    $('#quick-text-size').value = Math.max(20, Math.min(100, +V.MEME_SIZE || 60));
     if($('#quick-text-size-val')) $('#quick-text-size-val').textContent = ($('#quick-text-size').value) + 'px';
   }
   if($('#quick-text-pos')){
@@ -3453,11 +3453,11 @@ function openEditClipModal(idx){
   if($('#modal-font-family')) $('#modal-font-family').onchange = () => updateModalLivePreview();
   if($('#modal-font-color')) $('#modal-font-color').oninput = () => updateModalLivePreview();
 
-  // Text size slider (default small 70px)
+  // Text size slider (range: 20px - 100px, default 60px)
   const textSizeRange = $('#modal-text-size-range');
   const textSizeVal = $('#modal-text-size-val');
   if(textSizeRange){
-    const initSize = c.text_size || 70;
+    const initSize = Math.max(20, Math.min(100, +(c.text_size || 60)));
     textSizeRange.value = initSize;
     if(textSizeVal) textSizeVal.textContent = initSize + 'px';
     textSizeRange.oninput = e => {
@@ -3818,7 +3818,7 @@ function updateModalLivePreview(){
   const curHook = $('#edit-clip-hook') ? $('#edit-clip-hook').value : '';
   const textFont = $('#modal-font-family')?.value || 'Anton';
   const textColor = $('#modal-font-color')?.value || '#ffffff';
-  const textSize = +($('#modal-text-size-range')?.value) || 70;
+  const textSize = Math.max(20, Math.min(100, +($('#modal-text-size-range')?.value) || 60));
   const textPos = +($('#modal-text-pos-range')?.value) || 15;
 
   const phoneDivider = $('#modal-phone-divider');
@@ -4234,7 +4234,7 @@ function applyModalEditsToClip(){
   c.gameplay_x = modalGameplayX !== undefined ? modalGameplayX : 'auto';
   c.text_font = $('#modal-font-family') ? $('#modal-font-family').value : 'Anton';
   c.text_color = $('#modal-font-color') ? $('#modal-font-color').value : '#ffffff';
-  c.text_size = $('#modal-text-size-range') ? +$('#modal-text-size-range').value : 70;
+  c.text_size = $('#modal-text-size-range') ? Math.max(20, Math.min(100, +$('#modal-text-size-range').value)) : 60;
   c.text_pos = $('#modal-text-pos-range') ? +$('#modal-text-pos-range').value : 15;
 
   if(modalFcActive && modalFcPath){
@@ -4544,7 +4544,8 @@ async function init(){
   V.CAP_UPPER = (V.CAP_UPPER === 'yes' || V.CAP_UPPER === true) ? 'yes' : 'no';
 
   // Normalize text size and position
-  if(!V.MEME_SIZE || isNaN(+V.MEME_SIZE)) V.MEME_SIZE = 120;
+  if(!V.MEME_SIZE || isNaN(+V.MEME_SIZE)) V.MEME_SIZE = 60;
+  else V.MEME_SIZE = Math.max(20, Math.min(100, Math.round(+V.MEME_SIZE)));
   if(V.MEME_Y_PCT === undefined || isNaN(+V.MEME_Y_PCT)) V.MEME_Y_PCT = 15;
 
   buildAdvancedSettings();
