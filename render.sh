@@ -6,12 +6,13 @@ source "$HERE/config.env"
 
 IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN="" FC_CROP="" FC_FIT=""
 FONT_COLOR="white" HOOK_SIZE="" FONT_FAMILY="Anton"
-while getopts "i:s:e:l:o:a:t:f:c:m:p:x:C:S:F:" o; do
+while getopts "i:s:e:l:o:a:t:f:c:m:p:x:C:S:F:Y:" o; do
   case $o in i) IN=$OPTARG;; s) S=$OPTARG;; e) E=$OPTARG;; l) L=$OPTARG;;
              o) OUT=$OPTARG;; a) ASS=$OPTARG;; t) HOOK=$OPTARG;; f) FC_IN=$OPTARG;;
              c) FC_CROP=$OPTARG;; m) FC_FIT=$OPTARG;; p) B_TOP_PCT=$OPTARG;;
              x) B_MAIN_X=$OPTARG; A_MAIN_X=$OPTARG;;
              C) FONT_COLOR=$OPTARG;; S) HOOK_SIZE=$OPTARG;; F) FONT_FAMILY=$OPTARG;;
+             Y) MEME_Y_PCT=$OPTARG;;
              *) exit 1;; esac
 done
 [[ -z $IN || -z $S || -z $E || -z $OUT ]] && { sed -n '2p' "$0"; exit 1; }
@@ -111,11 +112,37 @@ fi
 
 LAST=v0
 if [[ -n $HOOK ]]; then
-  [[ $L == A ]] && MEME_Y=$(( OUT_H * 12 / 100 ))
+  [[ $L == A ]] && MEME_Y=$(( OUT_H * ${MEME_Y_PCT:-12} / 100 ))
   printf '%s' "$HOOK" | fold -s -w "$MEME_WRAP" > hook.txt
-  FONT_FILE="${FONT_FILE:-fonts/Anton-Regular.ttf}"
-  FF="font='${FONT_FAMILY:-Anton}'"
-  [[ -f $HERE/$FONT_FILE && "${FONT_FAMILY:-Anton}" == "Anton" ]] && FF="fontfile=${FONT_FILE}"
+  FONT_FILE="fonts/Anton-Regular.ttf"
+  case "${FONT_FAMILY:-Anton}" in
+    Impact|impact)
+      [[ -f "fonts/Impact.ttf" ]] && FONT_FILE="fonts/Impact.ttf"
+      ;;
+    "Arial Black"|ArialBlack|"Arial-Black"|arialblack)
+      [[ -f "fonts/Arial-Black.ttf" ]] && FONT_FILE="fonts/Arial-Black.ttf"
+      ;;
+    "Bebas Neue"|BebasNeue|"Bebas-Neue"|bebas)
+      [[ -f "fonts/Bebas-Neue.ttf" ]] && FONT_FILE="fonts/Bebas-Neue.ttf"
+      ;;
+    Montserrat|montserrat)
+      [[ -f "fonts/Montserrat.ttf" ]] && FONT_FILE="fonts/Montserrat.ttf"
+      ;;
+    Roboto|roboto)
+      [[ -f "fonts/Roboto.ttf" ]] && FONT_FILE="fonts/Roboto.ttf"
+      ;;
+    Anton|anton)
+      [[ -f "fonts/Anton-Regular.ttf" ]] && FONT_FILE="fonts/Anton-Regular.ttf"
+      ;;
+    *)
+      if [[ -f "fonts/${FONT_FAMILY}.ttf" ]]; then
+        FONT_FILE="fonts/${FONT_FAMILY}.ttf"
+      elif [[ -f "fonts/${FONT_FAMILY}-Regular.ttf" ]]; then
+        FONT_FILE="fonts/${FONT_FAMILY}-Regular.ttf"
+      fi
+      ;;
+  esac
+  FF="fontfile=${FONT_FILE}"
   EN=""
   if (( $(echo "$MEME_SECONDS > 0" | bc -l 2>/dev/null || python3 -c "import sys; print(1 if float(sys.argv[1])>0 else 0)" "$MEME_SECONDS" 2>/dev/null || echo 0) )); then
     EN=":enable='lt(t,${MEME_SECONDS})'"

@@ -536,14 +536,15 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                 (BASE_DIR / out_mp4).parent.mkdir(parents=True, exist_ok=True)
                 # Clean up legacy style-suffixed files if present
                 for old_suffix in ("_B.mp4", "_A.mp4"):
-                    old_f = (BASE_DIR / out_mp4).parent / f"{stem}{old_suffix}"
-                    if old_f.exists():
-                        try:
-                            old_f.unlink()
-                        except Exception:
-                            pass
+                    for parent_d in ((BASE_DIR / out_mp4).parent, OUT_DIR):
+                        old_f = parent_d / f"{stem}{old_suffix}"
+                        if old_f.exists():
+                            try:
+                                old_f.unlink()
+                            except Exception:
+                                pass
 
-                hook = (item.get("hook") or "").strip()
+                hook = (item.get("hook") or item.get("hook_en") or "").strip()
 
                 # Optional separate facecam video file
                 facecam_raw = (item.get("facecam") or payload.get("facecam") or "").strip()
@@ -631,6 +632,12 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                 text_size = item.get("text_size") or payload.get("text_size")
                 if text_size:
                     render_cmd.extend(["-S", str(text_size)])
+                text_pos = item.get("text_pos") or payload.get("text_pos")
+                if text_pos is not None and str(text_pos).strip() != "":
+                    try:
+                        render_cmd.extend(["-Y", str(int(text_pos))])
+                    except (ValueError, TypeError):
+                        pass
 
                 ret = run_command_logged(render_cmd, job)
                 if ret != 0 or not (BASE_DIR / out_mp4).exists():

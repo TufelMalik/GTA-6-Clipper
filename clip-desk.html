@@ -3406,8 +3406,11 @@ $('#btn-deselect-all').onclick = () => {
 function picked(){
   return clips.filter(c => c.selected !== false).map(c => {
     return {
+      ...c,
       file: c.file,
-      hook: c.hook_en || '',
+      hook: c.hook_en || c.hook || '',
+      hook_en: c.hook_en || c.hook || '',
+      title: c.title || c.file,
       layout: c.layout || L,
       facecam: c.facecam || '',
       facecam_crop: c.facecam_crop || '',
@@ -3417,6 +3420,7 @@ function picked(){
       text_font: c.text_font || 'Anton',
       text_color: c.text_color || '#ffffff',
       text_size: c.text_size || +V.MEME_SIZE || null,
+      text_pos: c.text_pos !== undefined ? c.text_pos : null,
       fc_crop_coords: c.fc_crop_coords || null,
       start_sec: c.start_sec,
       end_sec: c.end_sec,
@@ -3466,10 +3470,12 @@ function renderStep4Queue(){
     const originalIdx = clips.findIndex(x => x.file === c.file);
     const duration = ((+c.end_sec) - (+c.start_sec)).toFixed(1);
     const stem = c.file.replace(/\.[^/.]+$/, '');
-    const matchedOutItem = renderedOutputsList.find(o => {
-      const p = typeof o === 'string' ? o : o.path;
-      return p.includes(stem);
-    });
+    const matchedOutItem = renderedOutputsList
+      .filter(o => {
+        const p = typeof o === 'string' ? o : o.path;
+        return p.includes(stem);
+      })
+      .sort((a, b) => (b.mtime || 0) - (a.mtime || 0))[0];
     const matchedPath = matchedOutItem ? (typeof matchedOutItem === 'string' ? matchedOutItem : matchedOutItem.path) : null;
     const existingOutput = singleRenderOutputs[c.file] || matchedPath;
 
@@ -3640,7 +3646,9 @@ async function renderSingleClip(idx){
   if(!c) return;
   const clipPayload = {
     file: c.file,
-    hook: c.hook_en || '',
+    title: c.title || c.file,
+    hook: c.hook_en || c.hook || '',
+    hook_en: c.hook_en || c.hook || '',
     layout: c.layout || L,
     facecam: c.facecam || '',
     facecam_crop: c.facecam_crop || '',
@@ -3650,6 +3658,7 @@ async function renderSingleClip(idx){
     text_font: c.text_font || 'Anton',
     text_color: c.text_color || '#ffffff',
     text_size: c.text_size || +V.MEME_SIZE || null,
+    text_pos: c.text_pos !== undefined ? c.text_pos : null,
     start_sec: c.start_sec,
     end_sec: c.end_sec
   };
@@ -3666,7 +3675,8 @@ async function renderSingleClip(idx){
   if(card) card.classList.remove('rendering');
 
   const stem = c.file.replace(/\.[^/.]+$/, '');
-  const outPath = `out/${stem}.mp4`;
+  const pId = currentProjectId || 'default';
+  const outPath = pId ? `projects/${pId}/out/${stem}.mp4` : `out/${stem}.mp4`;
   singleRenderOutputs[c.file] = outPath;
   if(card) card.classList.add('done');
   await loadRenderedOutputs();
@@ -4686,14 +4696,15 @@ async function loadRenderedOutputs(){
     if(Array.isArray(res)){
       renderedOutputsList = res;
       singleRenderOutputs = {};
-      res.forEach(item => {
+      const sortedRes = [...res].sort((a, b) => (b.mtime || 0) - (a.mtime || 0));
+      sortedRes.forEach(item => {
         const filename = typeof item === 'string' ? item.split('/').pop() : item.name;
         const stem = filename.replace(/\.(mp4|webm|mkv)$/i, '').replace(/(_B|_A)$/i, '');
         const matchClip = clips.find(c => {
           const cStem = c.file.replace(/\.(mp4|webm|mkv)$/i, '');
           return cStem === stem || filename === c.file || filename.startsWith(cStem);
         });
-        if(matchClip){
+        if(matchClip && !singleRenderOutputs[matchClip.file]){
           const p = typeof item === 'string' ? item : item.path;
           singleRenderOutputs[matchClip.file] = p;
         }
