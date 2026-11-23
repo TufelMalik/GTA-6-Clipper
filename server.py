@@ -476,6 +476,18 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                     with jobs_lock:
                         job["log"].append(f"Applying facecam scaling mode: {facecam_fit}")
 
+                # Optional custom facecam height percentage (for Layout B)
+                b_top_pct = item.get("b_top_pct") or payload.get("b_top_pct")
+                if b_top_pct:
+                    try:
+                        top_pct_val = int(b_top_pct)
+                        if 10 <= top_pct_val <= 85:
+                            render_cmd.extend(["-p", str(top_pct_val)])
+                            with jobs_lock:
+                                job["log"].append(f"Applying custom facecam height: {top_pct_val}%")
+                    except (ValueError, TypeError):
+                        pass
+
                 ret = run_command_logged(render_cmd, job)
                 if ret != 0 or not (BASE_DIR / out_mp4).exists():
                     with jobs_lock:

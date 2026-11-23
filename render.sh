@@ -5,10 +5,10 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/config.env"
 
 IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN="" FC_CROP="" FC_FIT=""
-while getopts "i:s:e:l:o:a:t:f:c:m:" o; do
+while getopts "i:s:e:l:o:a:t:f:c:m:p:" o; do
   case $o in i) IN=$OPTARG;; s) S=$OPTARG;; e) E=$OPTARG;; l) L=$OPTARG;;
              o) OUT=$OPTARG;; a) ASS=$OPTARG;; t) HOOK=$OPTARG;; f) FC_IN=$OPTARG;;
-             c) FC_CROP=$OPTARG;; m) FC_FIT=$OPTARG;; *) exit 1;; esac
+             c) FC_CROP=$OPTARG;; m) FC_FIT=$OPTARG;; p) B_TOP_PCT=$OPTARG;; *) exit 1;; esac
 done
 [[ -z $IN || -z $S || -z $E || -z $OUT ]] && { sed -n '2p' "$0"; exit 1; }
 

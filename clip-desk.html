@@ -602,15 +602,51 @@ main, .wizard-main{
 .fc-crop-sub{font-size:9px;color:#fde68a;font-weight:500}
 .fc-crop-handle{
   position:absolute;
-  width:12px;
-  height:12px;
   background:#fff;
   border:2px solid #f59e0b;
+  box-shadow:0 1px 4px rgba(0,0,0,0.6);
+  z-index:12;
+  touch-action:none;
+}
+.fc-crop-handle-br{
+  width:12px;
+  height:12px;
   border-radius:50%;
   bottom:-6px;
   right:-6px;
   cursor:nwse-resize;
-  box-shadow:0 1px 4px rgba(0,0,0,0.6);
+}
+.fc-crop-handle-t{
+  width:24px;
+  height:8px;
+  border-radius:4px;
+  top:-4px;
+  left:calc(50% - 12px);
+  cursor:ns-resize;
+}
+.fc-crop-handle-b{
+  width:24px;
+  height:8px;
+  border-radius:4px;
+  bottom:-4px;
+  left:calc(50% - 12px);
+  cursor:ns-resize;
+}
+.fc-crop-handle-l{
+  width:8px;
+  height:24px;
+  border-radius:4px;
+  left:-4px;
+  top:calc(50% - 12px);
+  cursor:ew-resize;
+}
+.fc-crop-handle-r{
+  width:8px;
+  height:24px;
+  border-radius:4px;
+  right:-4px;
+  top:calc(50% - 12px);
+  cursor:ew-resize;
 }
 
 /* Modal 2-column layout for Framing & Live Preview */
@@ -650,11 +686,59 @@ main, .wizard-main{
   display:flex;
   align-items:center;
   justify-content:center;
+  user-select:none;
 }
 .modal-phone-preview canvas{
   width:100%;
   height:100%;
   display:block;
+}
+.modal-phone-divider{
+  position:absolute;
+  left:0;
+  right:0;
+  height:18px;
+  margin-top:-9px;
+  cursor:row-resize;
+  z-index:25;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  touch-action:none;
+  user-select:none;
+}
+.modal-phone-divider::before{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  top:50%;
+  height:4px;
+  transform:translateY(-50%);
+  background:#ffd23f;
+  box-shadow:0 0 8px rgba(255,210,63,0.5);
+  transition:all 0.15s ease;
+}
+.modal-phone-divider:hover::before, .modal-phone-divider.active::before{
+  height:6px;
+  background:#ffea75;
+  box-shadow:0 0 14px rgba(255,210,63,0.8);
+}
+.modal-phone-divider .divider-pill{
+  position:relative;
+  z-index:2;
+  background:#1a1c21;
+  border:1.5px solid #ffd23f;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  padding:1px 8px;
+  border-radius:10px;
+  display:flex;
+  gap:4px;
+  align-items:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.6);
+  pointer-events:none;
 }
 .ratio-pills{
   display:flex;
@@ -1254,7 +1338,11 @@ main, .wizard-main{
                         <span>🎯 FACECAM CROP</span>
                         <span class="fc-crop-sub" id="modal-fc-crop-sub">Framed</span>
                       </div>
-                      <div class="fc-crop-handle" id="modal-fc-crop-handle" title="Drag to resize framing"></div>
+                      <div class="fc-crop-handle fc-crop-handle-br" id="modal-fc-crop-handle" data-dir="br" title="Drag corner to resize"></div>
+                      <div class="fc-crop-handle fc-crop-handle-t" data-dir="t" title="Drag to adjust top height"></div>
+                      <div class="fc-crop-handle fc-crop-handle-b" data-dir="b" title="Drag to adjust bottom height"></div>
+                      <div class="fc-crop-handle fc-crop-handle-l" data-dir="l" title="Drag to adjust left width"></div>
+                      <div class="fc-crop-handle fc-crop-handle-r" data-dir="r" title="Drag to adjust right width"></div>
                     </div>
                   </div>
                 </div>
@@ -1286,9 +1374,21 @@ main, .wizard-main{
                 </div>
                 <div class="modal-phone-preview" id="modal-phone-preview">
                   <canvas id="modal-live-preview-canvas" width="270" height="480"></canvas>
+                  <!-- Interactive Draggable Divider on Live Preview (Matching User Screenshot) -->
+                  <div class="modal-phone-divider" id="modal-phone-divider" title="Drag up or down to adjust facecam vs gameplay height">
+                    <div class="divider-pill" id="modal-divider-pill">
+                      <span style="opacity:0.7">═</span>
+                      <span id="modal-divider-text">35% / 65%</span>
+                    </div>
+                  </div>
                 </div>
-                <span style="font-size:11px;color:var(--mut);text-align:center;margin-top:8px">
-                  Updates in real-time as you drag the crop or change fit
+                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:8px;font-size:11px;color:var(--mut)">
+                  <span>Facecam Height:</span>
+                  <input type="range" id="modal-top-pct-range" min="15" max="70" value="35" style="width:105px;accent-color:#ffd23f">
+                  <span id="modal-top-pct-val" style="font-weight:600;color:var(--tx)">35%</span>
+                </div>
+                <span style="font-size:10px;color:var(--mut);text-align:center;margin-top:4px">
+                  💡 <b>Drag the yellow divider</b> up or down to adjust heights!
                 </span>
               </div>
 
@@ -1878,6 +1978,8 @@ function picked(){
       layout: c.layout || L,
       facecam: c.facecam || '',
       facecam_crop: c.facecam_crop || '',
+      facecam_fit: c.facecam_fit || 'cover',
+      b_top_pct: c.b_top_pct || null,
       fc_crop_coords: c.fc_crop_coords || null,
       start_sec: c.start_sec,
       end_sec: c.end_sec,
@@ -1920,7 +2022,8 @@ function renderStep4Queue(){
       const fcFilename = c.facecam.split('/').pop();
       const cropText = c.facecam_crop ? ` [Crop: ${c.facecam_crop}]` : ' [Framed]';
       const fitText = c.facecam_fit ? ` [Fit: ${c.facecam_fit}]` : ' [Fit: cover]';
-      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📹 Facecam: ${fcFilename}${cropText}${fitText}</span>`;
+      const splitText = c.b_top_pct ? ` [Split: ${c.b_top_pct}%]` : '';
+      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📹 Facecam: ${fcFilename}${cropText}${fitText}${splitText}</span>`;
     } else {
       fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">📹 No Facecam (Stream Only)</span>`;
     }
@@ -1981,6 +2084,7 @@ async function renderSingleClip(idx){
     facecam: c.facecam || '',
     facecam_crop: c.facecam_crop || '',
     facecam_fit: c.facecam_fit || 'cover',
+    b_top_pct: c.b_top_pct || null,
     start_sec: c.start_sec,
     end_sec: c.end_sec
   };
@@ -2039,6 +2143,8 @@ function openEditClipModal(idx){
   modalFcPath = c.facecam || '';
   modalFcCropCoords = c.fc_crop_coords || null;
   modalFcFit = c.facecam_fit || 'cover';
+  modalBTopPct = c.b_top_pct || +V.B_TOP_PCT || 35;
+  setModalTopPct(modalBTopPct);
   setModalFitMode(modalFcFit);
   setModalCropRatio('free');
 
@@ -2140,6 +2246,49 @@ const fcCropHandle = $('#modal-fc-crop-handle');
 let modalFcFit = 'cover';
 let modalActiveRatio = 'free';
 let modalRatioVal = null;
+let modalBTopPct = 35;
+let isDraggingModalDivider = false;
+let activeResizeDir = null;
+
+function setModalTopPct(pct, syncRange = true){
+  modalBTopPct = Math.max(15, Math.min(70, Math.round(pct)));
+  const divEl = $('#modal-phone-divider');
+  if(divEl){
+    divEl.style.top = modalBTopPct + '%';
+  }
+  const textEl = $('#modal-divider-text');
+  if(textEl){
+    textEl.textContent = `${modalBTopPct}% / ${100 - modalBTopPct}%`;
+  }
+  const rangeEl = $('#modal-top-pct-range');
+  if(rangeEl && syncRange){
+    rangeEl.value = modalBTopPct;
+  }
+  const valEl = $('#modal-top-pct-val');
+  if(valEl){
+    valEl.textContent = modalBTopPct + '%';
+  }
+
+  if(modalActiveRatio === 'slot'){
+    const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
+    if(curLayout === 'B'){
+      const topH = 1920 * (modalBTopPct / 100);
+      modalRatioVal = 1080 / topH;
+      if(fcMonitor && fcMonitor.clientWidth && fcCropBox){
+        const mw = fcMonitor.clientWidth;
+        const mh = fcMonitor.clientHeight;
+        let curW = fcCropBox.offsetWidth;
+        let curH = Math.round(curW / modalRatioVal);
+        if(curH > mh){ curH = mh; curW = Math.round(curH * modalRatioVal); }
+        if(curW > mw){ curW = mw; curH = Math.round(curW / modalRatioVal); }
+        fcCropBox.style.width = curW + 'px';
+        fcCropBox.style.height = curH + 'px';
+        updateFacecamCropReadout();
+      }
+    }
+  }
+  updateModalLivePreview();
+}
 
 function setModalCropRatio(ratio){
   modalActiveRatio = ratio;
@@ -2169,7 +2318,7 @@ function setModalCropRatio(ratio){
     modalRatioVal = 9 / 16;
   } else if(ratio === 'slot'){
     if(curLayout === 'B'){
-      const topPct = +V.B_TOP_PCT || 31;
+      const topPct = modalBTopPct || +V.B_TOP_PCT || 35;
       const topH = 1920 * (topPct / 100);
       modalRatioVal = 1080 / topH;
     } else {
@@ -2309,12 +2458,24 @@ function updateModalLivePreview(){
   const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
   const curHook = $('#edit-clip-hook') ? $('#edit-clip-hook').value : '';
 
+  const phoneDivider = $('#modal-phone-divider');
+  const heightRow = $('#modal-top-pct-range') ? $('#modal-top-pct-range').closest('div') : null;
+
   if(curLayout === 'B'){
-    const topPct = +V.B_TOP_PCT || 31;
+    if(phoneDivider) phoneDivider.style.display = 'flex';
+    if(heightRow) heightRow.style.display = 'flex';
+
+    const topPct = modalBTopPct || +V.B_TOP_PCT || 35;
     const topH = Math.round(H * topPct / 100);
     const botH = H - topH;
     const divH = Math.max(2, Math.round((+V.B_DIV_PX || 8) * (H / 1920)));
     const divColor = V.B_DIV_COLOR ? V.B_DIV_COLOR.replace('0x', '#') : '#ffd23f';
+
+    if(phoneDivider && !isDraggingModalDivider){
+      phoneDivider.style.top = topPct + '%';
+      const textEl = $('#modal-divider-text');
+      if(textEl) textEl.textContent = `${topPct}% / ${100 - topPct}%`;
+    }
 
     // 1. Draw Top Facecam Slot
     if(modalFcActive && modalFcCropCoords && fcImg && fcImg.complete && fcImg.naturalWidth){
@@ -2398,6 +2559,8 @@ function updateModalLivePreview(){
     }
   } else {
     // Layout A
+    if(phoneDivider) phoneDivider.style.display = 'none';
+    if(heightRow) heightRow.style.display = 'none';
     if(frameImg && frameImg.complete && frameImg.naturalWidth){
       ctx.drawImage(frameImg, 0, 0, W, H);
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -2455,13 +2618,33 @@ function updateModalLivePreview(){
   }
 }
 
+// Draggable Height Divider on Live 9:16 Preview (User requirement)
+const modalPhoneDivider = $('#modal-phone-divider');
+const modalPhonePreview = $('#modal-phone-preview');
+const modalTopPctRange = $('#modal-top-pct-range');
+
+if(modalTopPctRange){
+  modalTopPctRange.oninput = e => {
+    setModalTopPct(+e.target.value, false);
+  };
+}
+
+if(modalPhoneDivider && modalPhonePreview){
+  modalPhoneDivider.addEventListener('pointerdown', e => {
+    isDraggingModalDivider = true;
+    modalPhoneDivider.classList.add('active');
+    modalPhoneDivider.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+  });
+}
+
 // Drag & Resize logic for Facecam Framing Box in Modal
 let isDraggingFcCrop = false;
 let isResizingFcCrop = false;
 let fcStartX = 0, fcStartY = 0, fcStartLeft = 0, fcStartTop = 0, fcStartW = 0, fcStartH = 0;
 
 fcCropBox.addEventListener('pointerdown', e => {
-  if(e.target === fcCropHandle) return;
+  if(e.target.classList.contains('fc-crop-handle')) return;
   isDraggingFcCrop = true;
   fcCropBox.classList.add('dragging');
   fcCropBox.setPointerCapture(e.pointerId);
@@ -2471,17 +2654,33 @@ fcCropBox.addEventListener('pointerdown', e => {
   fcStartTop = fcCropBox.offsetTop;
 });
 
-fcCropHandle.addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  isResizingFcCrop = true;
-  fcCropHandle.setPointerCapture(e.pointerId);
-  fcStartX = e.clientX;
-  fcStartY = e.clientY;
-  fcStartW = fcCropBox.offsetWidth;
-  fcStartH = fcCropBox.offsetHeight;
+// Multi-handle resize listeners for t, b, l, r, br
+document.querySelectorAll('#modal-fc-crop-box .fc-crop-handle').forEach(h => {
+  h.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    isResizingFcCrop = true;
+    activeResizeDir = h.getAttribute('data-dir') || 'br';
+    h.setPointerCapture(e.pointerId);
+    fcStartX = e.clientX;
+    fcStartY = e.clientY;
+    fcStartLeft = fcCropBox.offsetLeft;
+    fcStartTop = fcCropBox.offsetTop;
+    fcStartW = fcCropBox.offsetWidth;
+    fcStartH = fcCropBox.offsetHeight;
+  });
 });
 
 window.addEventListener('pointermove', e => {
+  if(isDraggingModalDivider && modalPhonePreview){
+    const rect = modalPhonePreview.getBoundingClientRect();
+    if(rect.height > 0){
+      const relY = e.clientY - rect.top;
+      const pct = (relY / rect.height) * 100;
+      setModalTopPct(pct);
+    }
+    return;
+  }
+
   if(isDraggingFcCrop){
     const mw = fcMonitor.clientWidth || 320;
     const mh = fcMonitor.clientHeight || 240;
@@ -2496,39 +2695,103 @@ window.addEventListener('pointermove', e => {
   } else if(isResizingFcCrop){
     const mw = fcMonitor.clientWidth || 320;
     const mh = fcMonitor.clientHeight || 240;
+    const dx = e.clientX - fcStartX;
+    const dy = e.clientY - fcStartY;
 
-    if(modalActiveRatio !== 'free' && modalRatioVal){
-      let newW = fcStartW + (e.clientX - fcStartX);
-      let newH = Math.round(newW / modalRatioVal);
-      if(fcCropBox.offsetLeft + newW > mw){
-        newW = mw - fcCropBox.offsetLeft;
-        newH = Math.round(newW / modalRatioVal);
-      }
-      if(fcCropBox.offsetTop + newH > mh){
-        newH = mh - fcCropBox.offsetTop;
+    if(activeResizeDir === 'b'){
+      let newH = Math.max(30, Math.min(mh - fcStartTop, fcStartH + dy));
+      let newW = fcCropBox.offsetWidth;
+      if(modalActiveRatio !== 'free' && modalRatioVal){
         newW = Math.round(newH * modalRatioVal);
+        if(fcStartLeft + newW > mw){
+          newW = mw - fcStartLeft;
+          newH = Math.round(newW / modalRatioVal);
+        }
       }
-      newW = Math.max(30, newW);
-      newH = Math.max(30, newH);
+      fcCropBox.style.width = newW + 'px';
+      fcCropBox.style.height = newH + 'px';
+    } else if(activeResizeDir === 't'){
+      let rawTop = Math.max(0, Math.min(fcStartTop + fcStartH - 30, fcStartTop + dy));
+      let newH = (fcStartTop + fcStartH) - rawTop;
+      let newW = fcCropBox.offsetWidth;
+      if(modalActiveRatio !== 'free' && modalRatioVal){
+        newW = Math.round(newH * modalRatioVal);
+        if(fcStartLeft + newW > mw){
+          newW = mw - fcStartLeft;
+          newH = Math.round(newW / modalRatioVal);
+          rawTop = (fcStartTop + fcStartH) - newH;
+        }
+      }
+      fcCropBox.style.top = rawTop + 'px';
+      fcCropBox.style.height = newH + 'px';
+      fcCropBox.style.width = newW + 'px';
+    } else if(activeResizeDir === 'r'){
+      let newW = Math.max(30, Math.min(mw - fcStartLeft, fcStartW + dx));
+      let newH = fcCropBox.offsetHeight;
+      if(modalActiveRatio !== 'free' && modalRatioVal){
+        newH = Math.round(newW / modalRatioVal);
+        if(fcStartTop + newH > mh){
+          newH = mh - fcStartTop;
+          newW = Math.round(newH * modalRatioVal);
+        }
+      }
+      fcCropBox.style.width = newW + 'px';
+      fcCropBox.style.height = newH + 'px';
+    } else if(activeResizeDir === 'l'){
+      let rawLeft = Math.max(0, Math.min(fcStartLeft + fcStartW - 30, fcStartLeft + dx));
+      let newW = (fcStartLeft + fcStartW) - rawLeft;
+      let newH = fcCropBox.offsetHeight;
+      if(modalActiveRatio !== 'free' && modalRatioVal){
+        newH = Math.round(newW / modalRatioVal);
+        if(fcStartTop + newH > mh){
+          newH = mh - fcStartTop;
+          newW = Math.round(newH * modalRatioVal);
+          rawLeft = (fcStartLeft + fcStartW) - newW;
+        }
+      }
+      fcCropBox.style.left = rawLeft + 'px';
       fcCropBox.style.width = newW + 'px';
       fcCropBox.style.height = newH + 'px';
     } else {
-      let newW = Math.max(30, Math.min(mw - fcCropBox.offsetLeft, fcStartW + (e.clientX - fcStartX)));
-      let newH = Math.max(30, Math.min(mh - fcCropBox.offsetTop, fcStartH + (e.clientY - fcStartY)));
-      fcCropBox.style.width = newW + 'px';
-      fcCropBox.style.height = newH + 'px';
+      // 'br' (corner resize)
+      if(modalActiveRatio !== 'free' && modalRatioVal){
+        let newW = fcStartW + dx;
+        let newH = Math.round(newW / modalRatioVal);
+        if(fcStartLeft + newW > mw){
+          newW = mw - fcStartLeft;
+          newH = Math.round(newW / modalRatioVal);
+        }
+        if(fcStartTop + newH > mh){
+          newH = mh - fcStartTop;
+          newW = Math.round(newH * modalRatioVal);
+        }
+        newW = Math.max(30, newW);
+        newH = Math.max(30, newH);
+        fcCropBox.style.width = newW + 'px';
+        fcCropBox.style.height = newH + 'px';
+      } else {
+        let newW = Math.max(30, Math.min(mw - fcStartLeft, fcStartW + dx));
+        let newH = Math.max(30, Math.min(mh - fcStartTop, fcStartH + dy));
+        fcCropBox.style.width = newW + 'px';
+        fcCropBox.style.height = newH + 'px';
+      }
     }
     updateFacecamCropReadout();
   }
 });
 
 window.addEventListener('pointerup', () => {
+  if(isDraggingModalDivider){
+    isDraggingModalDivider = false;
+    if(modalPhoneDivider) modalPhoneDivider.classList.remove('active');
+  }
   if(isDraggingFcCrop){
     isDraggingFcCrop = false;
     fcCropBox.classList.remove('dragging');
   }
   if(isResizingFcCrop){
     isResizingFcCrop = false;
+    activeResizeDir = null;
   }
 });
 
@@ -2582,6 +2845,7 @@ function applyModalEditsToClip(){
   c.layout = $('#edit-clip-layout').value;
   c.start_sec = +$('#edit-clip-start').value;
   c.end_sec = +$('#edit-clip-end').value;
+  c.b_top_pct = modalBTopPct;
 
   if(modalFcActive && modalFcPath){
     c.facecam = modalFcPath;
