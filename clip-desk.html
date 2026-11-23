@@ -2454,9 +2454,10 @@ function buildAdvancedSettings(){
           </div>
         </div>
       </div>
-      <div style="margin-top:12px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;gap:5px;width:100%;background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;border:1px solid var(--line)">
+      <div style="margin-top:12px;font-size:11px;color:var(--mut);display:flex;flex-direction:column;gap:6px;width:100%;background:rgba(255,255,255,0.02);padding:11px 12px;border-radius:8px;border:1px solid var(--line)">
         <div style="display:flex;justify-content:space-between"><span>Facecam Slot:</span><strong id="adv-fc-stat" style="color:var(--tx)">35% (672px)</strong></div>
         <div style="display:flex;justify-content:space-between"><span>Gameplay Slot:</span><strong id="adv-main-stat" style="color:var(--tx)">65% (1248px)</strong></div>
+        <div style="display:flex;justify-content:space-between;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)"><span>Source Video:</span><strong id="adv-src-stat" style="color:#ffd23f">1920 × 1080 px</strong></div>
       </div>
     </div>
   `;
@@ -2559,6 +2560,13 @@ function drawAdvPreview(){
 
   const mainStat = $('#adv-main-stat');
   if(mainStat) mainStat.textContent = `${100 - topPct}% (${1920 - Math.round(1920 * topPct / 100)}px)`;
+
+  const srcStat = $('#adv-src-stat');
+  if(srcStat){
+    const sw = (+V.SRC_W) || (typeof frameImg !== 'undefined' && frameImg && frameImg.naturalWidth) || 1920;
+    const sh = (+V.SRC_H) || (typeof frameImg !== 'undefined' && frameImg && frameImg.naturalHeight) || 1080;
+    srcStat.textContent = `${sw} × ${sh} px`;
+  }
 
   // 1. Draw Facecam Area (Top)
   ctx.save();
@@ -3148,7 +3156,11 @@ function picked(){
       facecam: c.facecam || '',
       facecam_crop: c.facecam_crop || '',
       facecam_fit: c.facecam_fit || 'cover',
-      b_top_pct: c.b_top_pct || null,
+      b_top_pct: c.b_top_pct || +V.B_TOP_PCT || null,
+      gameplay_x: c.gameplay_x !== undefined ? c.gameplay_x : (V.B_MAIN_X || 'auto'),
+      text_font: c.text_font || 'Anton',
+      text_color: c.text_color || '#ffffff',
+      text_size: c.text_size || +V.MEME_SIZE || null,
       fc_crop_coords: c.fc_crop_coords || null,
       start_sec: c.start_sec,
       end_sec: c.end_sec,
@@ -3289,11 +3301,11 @@ async function renderSingleClip(idx){
     facecam: c.facecam || '',
     facecam_crop: c.facecam_crop || '',
     facecam_fit: c.facecam_fit || 'cover',
-    b_top_pct: c.b_top_pct || null,
+    b_top_pct: c.b_top_pct || +V.B_TOP_PCT || null,
     gameplay_x: c.gameplay_x !== undefined ? c.gameplay_x : (V.B_MAIN_X || 'auto'),
     text_font: c.text_font || 'Anton',
     text_color: c.text_color || '#ffffff',
-    text_size: c.text_size || null,
+    text_size: c.text_size || +V.MEME_SIZE || null,
     start_sec: c.start_sec,
     end_sec: c.end_sec
   };
