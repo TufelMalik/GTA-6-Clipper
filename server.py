@@ -339,22 +339,46 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
             source_raw = payload.get("source", "input/sample.mp4")
             source_val = validate_source_path(source_raw)
             gemini_prompt_path = BASE_DIR / "GEMINI_PROMPT.md"
-            if not gemini_prompt_path.exists():
+            
+            prompt_text = ""
+            if gemini_prompt_path.exists():
+                prompt_text = gemini_prompt_path.read_text(encoding="utf-8")
+                prompt_text = prompt_text.replace("./input/sample.mp4", source_val)
+                prompt_text += "\nkimo is unavailable; use ffmpeg/ffprobe and local Python only.\n"
+
+            # Check if Gemini CLI is installed and whether an API key is available
+            gemini_cmd = shutil.which("gemini")
+            cfg = read_config_env()
+            if cfg.get("GEMINI_API_KEY") and "GEMINI_API_KEY" not in os.environ:
+                os.environ["GEMINI_API_KEY"] = cfg["GEMINI_API_KEY"]
+
+            ret = 1
+            has_api_key = bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_GENAI_USE_VERTEXAI") or os.environ.get("GOOGLE_GENAI_USE_GCA"))
+
+            if gemini_cmd and prompt_text and has_api_key:
                 with jobs_lock:
-                    job["log"].append("! GEMINI_PROMPT.md not found")
-                    job["status"] = "error"
-                return
+                    job["log"].append(f"Running gemini search on {source_val}...")
+                ret = run_command_logged([gemini_cmd, "-p", prompt_text], job)
 
-            prompt_text = gemini_prompt_path.read_text(encoding="utf-8")
-            prompt_text = prompt_text.replace("./input/sample.mp4", source_val)
-            prompt_text += "\nkimo is unavailable; use ffmpeg/ffprobe and local Python only.\n"
-
-            gemini_cmd = shutil.which("gemini") or "gemini"
-            with jobs_lock:
-                job["log"].append(f"Running gemini search on {source_val}...")
-
-            ret = run_command_logged([gemini_cmd, "-p", prompt_text], job)
             clips_json_path = CLIPS_DIR / "clips.json"
+
+            # Fallback to local action scanner if Gemini CLI is missing, unauthenticated, or failed
+            if ret != 0 or not clips_json_path.exists():
+                with jobs_lock:
+                    if gemini_cmd and not has_api_key:
+                        job["log"].append("ℹ️ Gemini CLI requires auth (GEMINI_API_KEY). Running Local Video Action Scanner (ffmpeg/ffprobe)...")
+                    else:
+                        job["log"].append("⚠️ Gemini CLI exited or failed. Running Local Video Action Scanner (ffmpeg/ffprobe)...")
+
+                local_scanner_script = BASE_DIR / "find_clips_local.py"
+                local_args = [sys.executable, str(local_scanner_script), source_val]
+                if project_id:
+                    local_args.append(project_id)
+
+                ret_local = run_command_logged(local_args, job)
+                if ret_local == 0 and clips_json_path.exists():
+                    ret = 0
+
             if project_id and ret == 0 and clips_json_path.exists():
                 p_dir = get_project_dir(project_id)
                 shutil.copy2(clips_json_path, p_dir / "clips.json")
@@ -367,7 +391,7 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                     job["status"] = "done"
                 else:
                     if ret != 0:
-                        job["log"].append(f"! Gemini CLI exited with status code {ret}.")
+                        job["log"].append(f"! Clip scanner exited with status code {ret}.")
                     if not clips_json_path.exists():
                         job["log"].append("! clips.json was not generated.")
                     job["status"] = "error"
