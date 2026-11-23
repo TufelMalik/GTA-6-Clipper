@@ -527,20 +527,46 @@ main, .wizard-main{
   padding:8px 10px;
   border-left:3px solid #facc15;
 }
-.qcard-hook-text{
+.qcard-hook-input{
+  width:100%;
+  box-sizing:border-box;
+  background:rgba(0,0,0,0.55);
+  border:1px solid rgba(250,204,21,0.3);
+  border-radius:5px;
+  padding:6px 10px;
   font-family:'Anton',Impact,sans-serif;
-  font-size:14.5px;
+  font-size:14px;
   color:#facc15;
-  line-height:1.2;
   letter-spacing:0.3px;
-  word-break:break-word;
+  outline:none;
+  transition:border-color 0.15s, background 0.15s;
 }
-.qcard-actions-group{
+.qcard-hook-input:focus{
+  border-color:#facc15;
+  background:rgba(0,0,0,0.8);
+}
+.qcard-actions-row{
   display:flex;
-  flex-direction:column;
   gap:8px;
+  align-items:center;
   padding-top:10px;
   border-top:1px solid var(--line);
+}
+.qcard-btn-icon{
+  flex:1;
+  height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  padding:0;
+  border-radius:6px;
+  text-decoration:none;
+  cursor:pointer;
+  transition:transform 0.15s ease, background 0.15s ease;
+}
+.qcard-btn-icon:hover{
+  transform:translateY(-1px);
 }
 
 /* Facecam Source Framing in Edit Clip Modal */
@@ -3461,6 +3487,8 @@ function renderStep4Queue(){
     const colorDot = c.text_color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.text_color};border:1px solid #000;margin-left:5px;vertical-align:middle" title="${c.text_color}"></span>` : '';
 
     const videoSrc = existingOutput ? `/${existingOutput}?t=${Date.now()}` : `/clips/${c.file}`;
+    const displayTitle = c.title || c.file;
+    const hasDifferentTitle = c.title && c.title !== c.file;
 
     return `
       <div class="queue-card ${existingOutput ? 'done' : ''}" id="qcard-${originalIdx}">
@@ -3496,23 +3524,41 @@ function renderStep4Queue(){
         <!-- Bottom: Options & Controls Below the Video -->
         <div class="qcard-body">
           <div style="display:flex;flex-direction:column;gap:9px">
-            <!-- File name and Event Type -->
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-              <span style="font-weight:700;font-size:13.5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.file}">
-                ${c.file}
-              </span>
+            <!-- Title on Top with Event Tag -->
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+              <div style="min-width:0;flex:1">
+                <div style="font-weight:700;font-size:13.5px;color:#fff;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${displayTitle}">
+                  ${displayTitle}
+                </div>
+                ${hasDifferentTitle ? `
+                  <div style="font-size:11px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.file}">
+                    ${c.file}
+                  </div>
+                ` : ''}
+              </div>
               <span class="clip-tag" style="margin:0;flex-shrink:0">${c.event_type || 'highlight'}</span>
             </div>
 
-            <!-- Meme Hook Headline -->
+            <!-- Hook Headline with Title on Top and Save Button if edited -->
             <div class="qcard-hook-box">
-              <div style="font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">Hook Headline</div>
-              <div class="qcard-hook-text">
-                “${c.hook_en || c.hook || 'NO HOOK TEXT'}”
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <div style="display:flex;align-items:center;gap:5px">
+                  <span style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:0.5px">Hook Headline</span>
+                  ${(fontInfo || colorDot) ? `<span style="font-size:10px;color:var(--mut)">· ${fontInfo}${colorDot}</span>` : ''}
+                </div>
+                <button id="btn-save-hook-${originalIdx}" class="btn sm success" style="display:none;padding:2px 8px;font-size:11px;font-weight:700;height:22px;line-height:1" onclick="saveQCardHook(${originalIdx})" title="Save Hook Headline">
+                  💾 Save
+                </button>
               </div>
-              <div style="font-size:10.5px;color:var(--mut);margin-top:3px;display:flex;align-items:center">
-                ${fontInfo}${colorDot}
-              </div>
+              <input
+                type="text"
+                id="qcard-hook-${originalIdx}"
+                class="qcard-hook-input"
+                value="${(c.hook_en || c.hook || '').replace(/"/g, '&quot;')}"
+                placeholder="Enter meme hook text..."
+                oninput="onQCardHookInput(${originalIdx}, this.value)"
+                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); saveQCardHook(${originalIdx}); }"
+              >
             </div>
 
             <!-- Config Chips -->
@@ -3529,32 +3575,64 @@ function renderStep4Queue(){
             </div>
           </div>
 
-          <!-- Action Buttons Group -->
-          <div class="qcard-actions-group">
-            <div style="display:flex;gap:8px">
-              <button class="btn sm p" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})" style="flex:1;justify-content:center;padding:8px 10px;font-weight:600;font-size:12px">
-                ${existingOutput ? '🔄 Re-render Short' : '🎬 Render Short'}
-              </button>
-              <button class="btn sm" onclick="openEditClipModal(${originalIdx})" style="justify-content:center;padding:8px 12px;font-size:12px" title="Edit Clip Settings">
-                ✏️ Edit
-              </button>
-            </div>
-
+          <!-- Action Buttons Group (Icons Only) -->
+          <div class="qcard-actions-row">
+            <button class="btn sm p qcard-btn-icon" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})" title="${existingOutput ? 'Re-render Short' : 'Render Short'}" aria-label="${existingOutput ? 'Re-render Short' : 'Render Short'}">
+              ${existingOutput ? '🔄' : '🎬'}
+            </button>
+            <button class="btn sm qcard-btn-icon" onclick="openEditClipModal(${originalIdx})" title="Edit Clip & Facecam" aria-label="Edit Clip & Facecam">
+              ✏️
+            </button>
             ${existingOutput ? `
-              <div style="display:flex;gap:6px">
-                <a class="btn sm success" href="/${existingOutput}" download style="flex:1;text-decoration:none;justify-content:center;padding:7px 10px;font-size:11.5px;font-weight:600">
-                  ⬇ Download Short
-                </a>
-                <button class="btn sm" onclick="window.open('/${existingOutput}', '_blank')" style="justify-content:center;padding:7px 10px;font-size:11.5px" title="Open in Player">
-                  ↗ Open
-                </button>
-              </div>
+              <a class="btn sm success qcard-btn-icon" href="/${existingOutput}" download title="Download Short" aria-label="Download Short">
+                ⬇
+              </a>
+              <button class="btn sm qcard-btn-icon" onclick="window.open('/${existingOutput}', '_blank')" title="Open Video in New Tab" aria-label="Open Video in New Tab">
+                ↗
+              </button>
             ` : ''}
           </div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+function onQCardHookInput(idx, val){
+  const btn = $(`#btn-save-hook-${idx}`);
+  const originalVal = clips[idx] ? (clips[idx].hook_en || clips[idx].hook || '') : '';
+  if(btn){
+    if(val !== originalVal){
+      btn.style.display = 'inline-flex';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+}
+
+async function saveQCardHook(idx){
+  const inp = $(`#qcard-hook-${idx}`);
+  const btn = $(`#btn-save-hook-${idx}`);
+  if(!inp || !clips[idx]) return;
+  const val = inp.value.trim();
+  clips[idx].hook_en = val;
+  if(btn){
+    btn.textContent = '⏳';
+    btn.disabled = true;
+  }
+  await saveClips();
+  if(btn){
+    btn.textContent = '✓ Saved';
+    setTimeout(() => {
+      btn.style.display = 'none';
+      btn.textContent = '💾 Save';
+      btn.disabled = false;
+    }, 1500);
+  }
+  const step2Inp = document.querySelector(`.clip-hook-input[data-h="${idx}"]`);
+  if(step2Inp) step2Inp.value = val;
+  draw();
+  log(`✓ Saved Hook Headline for clip ${clips[idx].file}: "${val}"`);
 }
 
 async function renderSingleClip(idx){
@@ -3578,13 +3656,13 @@ async function renderSingleClip(idx){
 
   const btn = $(`#btn-render-single-${idx}`);
   const card = $(`#qcard-${idx}`);
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Rendering...'; }
+  if(btn){ btn.disabled = true; btn.textContent = '⏳'; btn.title = 'Rendering in progress...'; }
   if(card) card.classList.add('rendering');
 
   await saveCurrentConfig();
   await job({type:'render', clips:[clipPayload]}, 'Rendering single clip: ' + c.file);
 
-  if(btn){ btn.disabled = false; btn.textContent = '🔄 Re-render Short'; }
+  if(btn){ btn.disabled = false; btn.textContent = '🔄'; btn.title = 'Re-render Short'; }
   if(card) card.classList.remove('rendering');
 
   const stem = c.file.replace(/\.[^/.]+$/, '');
