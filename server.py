@@ -381,7 +381,7 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                             job["status"] = "error"
                         return
 
-                ass_file = f"out/{stem}_{layout}.ass"
+                ass_file = f"out/{stem}.ass"
                 ass_path = BASE_DIR / ass_file
                 with jobs_lock:
                     job["log"].append(f"Generating ASS subtitles for {filename} -> {ass_file}...")
@@ -416,7 +416,16 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                     return
                 duration_str = str(round(duration, 2))
 
-                out_mp4 = f"out/{stem}_{layout}.mp4"
+                out_mp4 = f"out/{stem}.mp4"
+                # Clean up legacy style-suffixed files if present
+                for old_suffix in ("_B.mp4", "_A.mp4"):
+                    old_f = BASE_DIR / "out" / f"{stem}{old_suffix}"
+                    if old_f.exists():
+                        try:
+                            old_f.unlink()
+                        except Exception:
+                            pass
+
                 hook = (item.get("hook") or "").strip()
 
                 # Optional separate facecam video file
@@ -487,6 +496,24 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                                 job["log"].append(f"Applying custom facecam height: {top_pct_val}%")
                     except (ValueError, TypeError):
                         pass
+
+                # Optional custom gameplay crop X (for Shorts Framing)
+                gameplay_x = item.get("gameplay_x") or payload.get("gameplay_x")
+                if gameplay_x is not None and str(gameplay_x).strip() != "":
+                    render_cmd.extend(["-x", str(gameplay_x).strip()])
+                    with jobs_lock:
+                        job["log"].append(f"Applying custom gameplay framing: {gameplay_x}")
+
+                # Optional custom hook font style, color, size
+                text_font = (item.get("text_font") or payload.get("text_font") or "").strip()
+                if text_font:
+                    render_cmd.extend(["-F", text_font])
+                text_color = (item.get("text_color") or payload.get("text_color") or "").strip()
+                if text_color:
+                    render_cmd.extend(["-C", text_color])
+                text_size = item.get("text_size") or payload.get("text_size")
+                if text_size:
+                    render_cmd.extend(["-S", str(text_size)])
 
                 ret = run_command_logged(render_cmd, job)
                 if ret != 0 or not (BASE_DIR / out_mp4).exists():

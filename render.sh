@@ -5,10 +5,14 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/config.env"
 
 IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN="" FC_CROP="" FC_FIT=""
-while getopts "i:s:e:l:o:a:t:f:c:m:p:" o; do
+FONT_COLOR="white" HOOK_SIZE="" FONT_FAMILY="Anton"
+while getopts "i:s:e:l:o:a:t:f:c:m:p:x:C:S:F:" o; do
   case $o in i) IN=$OPTARG;; s) S=$OPTARG;; e) E=$OPTARG;; l) L=$OPTARG;;
              o) OUT=$OPTARG;; a) ASS=$OPTARG;; t) HOOK=$OPTARG;; f) FC_IN=$OPTARG;;
-             c) FC_CROP=$OPTARG;; m) FC_FIT=$OPTARG;; p) B_TOP_PCT=$OPTARG;; *) exit 1;; esac
+             c) FC_CROP=$OPTARG;; m) FC_FIT=$OPTARG;; p) B_TOP_PCT=$OPTARG;;
+             x) B_MAIN_X=$OPTARG; A_MAIN_X=$OPTARG;;
+             C) FONT_COLOR=$OPTARG;; S) HOOK_SIZE=$OPTARG;; F) FONT_FAMILY=$OPTARG;;
+             *) exit 1;; esac
 done
 [[ -z $IN || -z $S || -z $E || -z $OUT ]] && { sed -n '2p' "$0"; exit 1; }
 
@@ -83,7 +87,7 @@ else
   elif [[ $EFFECTIVE_FIT == fit || $EFFECTIVE_FIT == contain ]]; then
     TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=decrease,pad=${OUT_W}:${TOP}:(ow-iw)/2:(oh-ih)/2:black"
   else
-    TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=increase,crop=${OUT_W}:${TOP}"
+    TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=increase,crop=${OUT_W}:${TOP}:(in_w-out_w)/2:0"
   fi
   if [[ -n $FC_IN ]]; then
     if [[ -n $FC_CROP_FILTER ]]; then
@@ -110,13 +114,16 @@ if [[ -n $HOOK ]]; then
   [[ $L == A ]] && MEME_Y=$(( OUT_H * 12 / 100 ))
   printf '%s' "$HOOK" | fold -s -w "$MEME_WRAP" > hook.txt
   FONT_FILE="${FONT_FILE:-fonts/Anton-Regular.ttf}"
-  FF="font='Anton'"; [[ -f $HERE/$FONT_FILE ]] && FF="fontfile=${FONT_FILE}"
+  FF="font='${FONT_FAMILY:-Anton}'"
+  [[ -f $HERE/$FONT_FILE && "${FONT_FAMILY:-Anton}" == "Anton" ]] && FF="fontfile=${FONT_FILE}"
   EN=""
   if (( $(echo "$MEME_SECONDS > 0" | bc -l 2>/dev/null || python3 -c "import sys; print(1 if float(sys.argv[1])>0 else 0)" "$MEME_SECONDS" 2>/dev/null || echo 0) )); then
     EN=":enable='lt(t,${MEME_SECONDS})'"
   fi
+  ACTUAL_SIZE="${HOOK_SIZE:-$MEME_SIZE}"
+  ACTUAL_COLOR="${FONT_COLOR:-white}"
   FG="${FG};
-[${LAST}]drawtext=${FF}:textfile=hook.txt:fontsize=${MEME_SIZE}:fontcolor=white:borderw=${MEME_BORDER}:bordercolor=black:line_spacing=6:x=(w-text_w)/2:y=${MEME_Y}${EN}[v1]"
+[${LAST}]drawtext=${FF}:textfile=hook.txt:fontsize=${ACTUAL_SIZE}:fontcolor=${ACTUAL_COLOR}:borderw=${MEME_BORDER}:bordercolor=black:line_spacing=6:x=(w-text_w)/2:y=${MEME_Y}${EN}[v1]"
   LAST=v1
 fi
 if [[ -n $ASS ]]; then

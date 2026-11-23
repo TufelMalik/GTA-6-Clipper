@@ -791,6 +791,7 @@ main, .wizard-main{
   min-width:240px;
   max-width:65vw;
   height:100%;
+  max-height:calc(100vh - 56px);
   background:var(--panel);
   border-left:1px solid var(--line);
   display:flex;
@@ -840,23 +841,40 @@ main, .wizard-main{
 }
 .logs-panel .log-box{
   flex:1;
-  height:100%;
+  min-height:0;
+  max-height:calc(100vh - 100px);
   margin:0;
   border:none;
   border-radius:0;
   background:var(--field);
   overflow-y:auto;
+  overflow-x:hidden;
   padding:12px 14px;
   font:11.5px/1.5 ui-monospace,Consolas,monospace;
   color:#9ca3af;
   white-space:pre-wrap;
-  word-break:break-all;
+  word-break:break-word;
+  scroll-behavior:smooth;
+}
+.logs-panel .log-box::-webkit-scrollbar{
+  width:6px;
+}
+.logs-panel .log-box::-webkit-scrollbar-track{
+  background:rgba(0,0,0,0.2);
+}
+.logs-panel .log-box::-webkit-scrollbar-thumb{
+  background:var(--line-light);
+  border-radius:3px;
+}
+.logs-panel .log-box::-webkit-scrollbar-thumb:hover{
+  background:var(--acc);
 }
 @media (max-width:768px){
   .app-layout{flex-direction:column;height:auto}
   main, .wizard-main{height:auto;overflow-y:visible}
   .logs-resizer{display:none}
-  .logs-panel{width:100% !important;min-width:100% !important;height:240px;border-left:none;border-top:1px solid var(--line)}
+  .logs-panel{width:100% !important;min-width:100% !important;height:280px !important;max-height:360px !important;border-left:none;border-top:1px solid var(--line)}
+  .logs-panel .log-box{max-height:calc(360px - 44px) !important}
 }
 
 /* Step 4: Left Panel & Center Rendered Gallery Grid Layout */
@@ -1336,90 +1354,47 @@ main, .wizard-main{
 
   <!-- STEP 4: Render & Export -->
   <section class="wizard-step" id="step-4">
-    <div class="step4-layout-grid">
-
-      <!-- LEFT PANEL: Queue & Export Controls (Moved to Left Side) -->
-      <div class="step4-left-panel">
-        <div class="card">
-          <div style="margin-bottom:12px">
-            <h2 class="card-title" style="margin-bottom:4px;font-size:15px">4. Render & Export Shorts</h2>
-            <p class="card-desc" style="margin-bottom:0;font-size:12px">Review queue, customize facecams & render individual clips or batch.</p>
+    <div class="card" style="padding:22px">
+      <!-- Top Action Bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--line)">
+        <div>
+          <h2 class="card-title" style="margin:0 0 4px;font-size:16px">4. Render & Export Shorts</h2>
+          <p class="card-desc" style="margin:0;font-size:12.5px">Customize per-clip framing, facecams, fonts & render individual shorts or batch export.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;gap:6px">
+            <span class="pill" id="summary-clips-count">0 Clips Selected</span>
+            <span class="pill" id="summary-layout">Layout B</span>
+            <span class="pill">1080×1920 (9:16)</span>
           </div>
-
-          <!-- Compact Render Summary -->
-          <div class="render-summary" style="flex-direction:column;gap:10px;align-items:stretch;margin-bottom:16px">
-            <div class="render-details" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-              <div class="render-stat" style="padding:6px 8px">
-                <span class="stat-label" style="font-size:10px">Selected</span>
-                <span class="stat-val" id="summary-clips-count" style="font-size:14px">0</span>
-              </div>
-              <div class="render-stat" style="padding:6px 8px">
-                <span class="stat-label" style="font-size:10px">Layout</span>
-                <span class="stat-val" id="summary-layout" style="font-size:12px">Layout B</span>
-              </div>
-              <div class="render-stat" style="padding:6px 8px">
-                <span class="stat-label" style="font-size:10px">Quality</span>
-                <span class="stat-val" style="font-size:12px">1080×1920</span>
-              </div>
-            </div>
-            <button class="btn p" id="btn-render-batch" style="width:100%;justify-content:center;padding:10px 14px;font-size:13px">
-              🚀 Start Rendering All Selected
-            </button>
-          </div>
-
-          <!-- Clips Queue & Single Clip Export -->
-          <div class="queue-section" id="queue-section">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <div>
-                <h3 style="font-size:13px;font-weight:600;margin:0">🎬 Selected Clips Queue</h3>
-                <span style="font-size:11px;color:var(--mut)">Tweak facecams & render shorts</span>
-              </div>
-              <span style="font-size:11px;color:var(--acc);font-weight:600" id="queue-count-sub">0 clips ready</span>
-            </div>
-            <div class="queue-cards" id="step4-queue-cards" style="max-height:calc(100vh - 440px);overflow-y:auto;padding-right:2px">
-              <!-- Rendered dynamically -->
-            </div>
-          </div>
-
-          <div class="wizard-nav" style="margin-top:16px;padding-top:12px">
-            <button class="btn sm" id="nav-step4-back">← Back</button>
-            <button class="btn sm" onclick="goToStep(1)">Start Another Video</button>
-          </div>
+          <button class="btn p" id="btn-render-batch" style="padding:9px 18px;font-size:13px;font-weight:700">
+            🚀 Start Rendering All Selected
+          </button>
         </div>
       </div>
 
-      <!-- CENTER / MAIN PANEL: Rendered Shorts Grid View (In Center) -->
-      <div class="step4-center-gallery">
-        <div class="card" style="min-height:560px;display:flex;flex-direction:column">
-          <div class="gallery-header-bar" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--line)">
-            <div>
-              <h2 class="card-title" style="margin:0 0 4px;font-size:16px">
-                <span>🎉 Rendered Shorts (Grid View)</span>
-                <span class="live-pill" style="font-size:11px;background:rgba(16,185,129,0.15);color:var(--ok);padding:2px 8px;border-radius:12px;font-weight:600" id="gallery-count-badge">0 Videos Ready</span>
-              </h2>
-              <span style="font-size:12px;color:var(--mut)">Completed vertical 9:16 shorts with animated captions, facecam framing, and sound</span>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="btn sm" onclick="loadRenderedOutputs()" title="Refresh rendered clips from out folder">🔄 Refresh Grid</button>
-            </div>
+      <!-- Selected Clips Queue (Full Width with Output Videos Directly On Clips Item) -->
+      <div class="queue-section" id="queue-section">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div>
+            <h3 style="font-size:14px;font-weight:600;margin:0">🎬 Selected Clips Queue</h3>
+            <span style="font-size:11.5px;color:var(--mut)">Configure facecam, gameplay window, or render/re-render each clip directly below</span>
           </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:11.5px;color:var(--acc);font-weight:600" id="queue-count-sub">0 clips ready</span>
+            <button class="btn sm" onclick="loadRenderedOutputs()" title="Refresh rendered status">🔄 Refresh</button>
+          </div>
+        </div>
 
-          <!-- Video Grid Container -->
-          <div class="gallery-scroll-area" style="flex:1">
-            <div class="gallery-grid" id="gallery">
-              <!-- Rendered cards appear here dynamically -->
-            </div>
-            <div class="gallery-empty-state" id="gallery-empty-state" style="display:none;text-align:center;padding:80px 20px;color:var(--mut)">
-              <div style="font-size:44px;margin-bottom:12px;opacity:0.8">🎬</div>
-              <div style="font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px">No Rendered Shorts Yet</div>
-              <div style="font-size:12px;max-width:340px;margin:0 auto;line-height:1.5">
-                Click <b>"🎬 Render Clip"</b> on any clip on the left or <b>"🚀 Start Rendering All Selected"</b> to produce your 9:16 vertical shorts!
-              </div>
-            </div>
-          </div>
+        <div class="queue-cards" id="step4-queue-cards" style="display:flex;flex-direction:column;gap:12px">
+          <!-- Rendered dynamically -->
         </div>
       </div>
 
+      <div class="wizard-nav" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between">
+        <button class="btn sm" id="nav-step4-back">← Back to Style & Framing</button>
+        <button class="btn sm" onclick="goToStep(1)">Start Another Video</button>
+      </div>
     </div>
   </section>
 
@@ -1466,29 +1441,78 @@ main, .wizard-main{
         <label style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Clip File & Duration</label>
         <div style="font-weight:600;font-size:13px" id="edit-clip-file-info">clip_01.mp4</div>
       </div>
-      <div>
-        <label for="edit-clip-hook" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Hook Headline (Meme Text)</label>
-        <input type="text" id="edit-clip-hook" style="width:100%;padding:8px 10px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff;font-family:Anton,Impact,sans-serif;font-size:15px">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <!-- Hook Headline with Font Family and Color Selection -->
+      <div style="display:grid;grid-template-columns:1fr 140px 44px;gap:10px;align-items:flex-end">
         <div>
-          <label for="edit-clip-layout" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Layout Format</label>
-          <select id="edit-clip-layout" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
-            <option value="B">Layout B (Split Screen)</option>
-            <option value="A">Layout A (Blurred Background)</option>
+          <label for="edit-clip-hook" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px;font-weight:600">Hook Headline (Meme Text)</label>
+          <input type="text" id="edit-clip-hook" placeholder="E.g. BRO EJECTED AT LAST SECOND" style="width:100%;padding:8px 10px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff;font-family:Anton,Impact,sans-serif;font-size:14px">
+        </div>
+        <div>
+          <label for="modal-font-family" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px;font-weight:600">Font Style</label>
+          <select id="modal-font-family" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff;font-size:12px">
+            <option value="Anton" selected>Anton (Meme)</option>
+            <option value="Impact">Impact (Classic)</option>
+            <option value="Montserrat">Montserrat (Clean)</option>
+            <option value="Arial Black">Arial Black (Bold)</option>
+            <option value="Roboto">Roboto (Modern)</option>
+            <option value="Bebas Neue">Bebas Neue (Tall)</option>
           </select>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div>
-            <label for="edit-clip-start" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Start (s)</label>
-            <input type="number" step="0.1" id="edit-clip-start" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
-          </div>
-          <div>
-            <label for="edit-clip-end" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">End (s)</label>
-            <input type="number" step="0.1" id="edit-clip-end" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
-          </div>
+        <div>
+          <label for="modal-font-color" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px;font-weight:600">Color</label>
+          <input type="color" id="modal-font-color" value="#ffffff" title="Headline Text Color" style="width:100%;height:35px;padding:2px;background:var(--field);border:1px solid var(--line);border-radius:6px;cursor:pointer">
         </div>
       </div>
+
+      <!-- Layout Format Radio Buttons (Start & End fields removed) -->
+      <div>
+        <label style="font-size:12px;color:var(--mut);display:block;margin-bottom:6px;font-weight:600">Layout Format</label>
+        <div style="display:flex;gap:12px">
+          <label class="radio-card" style="flex:1;cursor:pointer;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;user-select:none">
+            <input type="radio" name="modal-layout-radio" id="modal-layout-radio-b" value="B" checked style="accent-color:var(--acc);width:16px;height:16px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--tx)">Layout B (Split Screen)</div>
+              <div style="font-size:10.5px;color:var(--mut)">Facecam top + gameplay bottom with divider</div>
+            </div>
+          </label>
+          <label class="radio-card" style="flex:1;cursor:pointer;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;user-select:none">
+            <input type="radio" name="modal-layout-radio" id="modal-layout-radio-a" value="A" style="accent-color:var(--acc);width:16px;height:16px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--tx)">Layout A (Blurred Background)</div>
+              <div style="font-size:10.5px;color:var(--mut)">Center gameplay with blurred background</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 1.5: Source Gameplay Framing (9:16 Shorts Window) - Collapsed by default -->
+      <details class="modal-gp-framing" id="modal-gp-framing-sec" style="background:var(--field);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px">
+        <summary style="font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:space-between;color:var(--tx);user-select:none;cursor:pointer">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span>🎮 Source Gameplay Framing (9:16 Shorts Window)</span>
+          </div>
+          <span style="font-size:11px;color:var(--acc);font-weight:600" id="modal-gp-status">Center (Auto) ▾</span>
+        </summary>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+            <span style="font-size:11px;color:var(--mut)">Drag the green 9:16 frame over this clip's gameplay action:</span>
+            <div class="presets-bar" style="margin:0">
+              <button type="button" class="btn sm" id="modal-gp-btn-left">◀ Left</button>
+              <button type="button" class="btn sm" id="modal-gp-btn-center">⯀ Center</button>
+              <button type="button" class="btn sm" id="modal-gp-btn-right">▶ Right</button>
+            </div>
+          </div>
+          <div class="modal-gp-monitor-wrap" style="position:relative;background:#050608;border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;justify-content:center;align-items:center;max-height:180px">
+            <div id="modal-gp-monitor" style="position:relative;display:inline-block;line-height:0">
+              <img id="modal-gp-img" style="max-height:180px;max-width:100%;display:block" alt="Source Gameplay Frame">
+              <div id="modal-gp-box" style="position:absolute;top:0;bottom:0;width:60px;left:40px;border:2px dashed #10b981;background:rgba(16,185,129,0.2);box-shadow:0 0 10px rgba(16,185,129,0.3);cursor:grab;display:flex;flex-direction:column;justify-content:space-between;padding:3px;touch-action:none">
+                <span style="font-size:8.5px;font-weight:700;color:#fff;background:rgba(0,0,0,0.7);padding:1px 3px;border-radius:2px;align-self:flex-start">9:16 SHORTS</span>
+                <span id="modal-gp-box-coords" style="font-size:8.5px;color:#10b981;font-weight:600;align-self:flex-end;background:rgba(0,0,0,0.7);padding:1px 3px;border-radius:2px">Center</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
 
       <!-- Section 2: Clip-Specific Facecam Video & Real Image Source Framing -->
       <div style="background:var(--field);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px">
@@ -1598,23 +1622,18 @@ main, .wizard-main{
                     </div>
                   </div>
                 </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:8px;font-size:11px;color:var(--mut)">
-                  <span>Facecam Height:</span>
-                  <input type="range" id="modal-top-pct-range" min="15" max="70" value="35" style="width:105px;accent-color:#ffd23f">
-                  <span id="modal-top-pct-val" style="font-weight:600;color:var(--tx)">35%</span>
-                </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:6px;font-size:11px;color:var(--mut)">
+                <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:10px;font-size:11px;color:var(--mut)">
                   <span>Text Size:</span>
-                  <input type="range" id="modal-text-size-range" min="60" max="180" value="120" style="width:105px;accent-color:#ffd23f">
-                  <span id="modal-text-size-val" style="font-weight:600;color:var(--tx)">120px</span>
+                  <input type="range" id="modal-text-size-range" min="40" max="160" value="70" style="width:105px;accent-color:#ffd23f">
+                  <span id="modal-text-size-val" style="font-weight:600;color:var(--tx)">70px</span>
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:6px;font-size:11px;color:var(--mut)">
                   <span>Text Position:</span>
                   <input type="range" id="modal-text-pos-range" min="0" max="50" value="15" style="width:105px;accent-color:#ffd23f">
                   <span id="modal-text-pos-val" style="font-weight:600;color:var(--tx)">15%</span>
                 </div>
-                <span style="font-size:10px;color:var(--mut);text-align:center;margin-top:4px">
-                  💡 <b>Drag the yellow divider</b> up or down to adjust heights!
+                <span style="font-size:10.5px;color:var(--mut);text-align:center;margin-top:6px;background:rgba(255,255,255,0.02);padding:6px;border-radius:6px;border:1px solid var(--line);width:100%">
+                  💡 <b>Drag the yellow divider</b> on the phone to adjust height!
                 </span>
               </div>
 
@@ -2211,6 +2230,8 @@ function draw(){
   let h = '';
   const firstSelected = picked()[0];
   const hookText = (firstSelected && firstSelected.hook) ? firstSelected.hook.toUpperCase() : 'BRO EJECTED AT LAST SECOND';
+  const capColor = V.CAP_HL || '#ffe600';
+  const capWord = (V.CAP_UPPER === 'yes') ? `WATCH THIS <u style="color:${capColor}">PLAY</u>` : `watch this <u style="color:${capColor}">play</u>`;
 
   if(L === 'B'){
     const t = Math.round(H * g('B_TOP_PCT') / 100);
@@ -2225,6 +2246,7 @@ function draw(){
         </div>
       </div>
       <b class="meme" style="top:${t + (H-t) * g('MEME_Y_PCT') / 100}px;font-size:${g('MEME_SIZE')*k}px;-webkit-text-stroke:${g('MEME_BORDER')*k*1.6}px #000">${hookText}</b>
+      <b class="cap" style="bottom:22px;left:0;right:0;margin:0 auto;position:absolute;z-index:5;width:100%;text-align:center;-webkit-text-stroke-width:${7*k*1.6}px">${capWord}</b>
     `;
   } else {
     const p = g('A_PANEL_H') * k, fw = g('A_FACE_W') * k, fh = fw * 3 / 4;
@@ -2234,7 +2256,7 @@ function draw(){
       <div class="mini" style="width:${fw}px;height:${fh}px;right:${g('A_FACE_RIGHT')*k}px;bottom:${g('A_FACE_BOTTOM')*k}px;left:auto">
         <span>FACECAM</span>
       </div>
-      <b class="cap" style="bottom:${560*k}px;-webkit-text-stroke-width:${7*k*1.6}px">he <u style="color:${V.CAP_HL}">climbed</u> on</b>
+      <b class="cap" style="bottom:${560*k}px;-webkit-text-stroke-width:${7*k*1.6}px">${capWord}</b>
     `;
   }
   $('#phone').innerHTML = h;
@@ -2567,7 +2589,8 @@ async function loadClips(){
 function renderStep4Queue(){
   const container = $('#step4-queue-cards');
   const selectedClips = picked();
-  $('#queue-count-sub').textContent = `${selectedClips.length} clips ready to export`;
+  const countSub = $('#queue-count-sub');
+  if(countSub) countSub.textContent = `${selectedClips.length} clips ready to export`;
 
   if(!selectedClips.length){
     container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--mut)">No clips selected. Please go back to Step 2 to select highlights.</div>';
@@ -2577,55 +2600,78 @@ function renderStep4Queue(){
   container.innerHTML = selectedClips.map((c, i) => {
     const originalIdx = clips.findIndex(x => x.file === c.file);
     const duration = ((+c.end_sec) - (+c.start_sec)).toFixed(1);
-    const existingOutput = singleRenderOutputs[c.file];
+    const stem = c.file.replace(/\.[^/.]+$/, '');
+    const expectedOut = `out/${stem}.mp4`;
+    const existingOutput = singleRenderOutputs[c.file] || (renderedOutputsList.some(o => (typeof o === 'string' ? o : o.path).includes(stem)) ? expectedOut : null);
 
     let fcBadgeHtml = '';
     if(c.facecam){
       const fcFilename = c.facecam.split('/').pop();
       const cropText = c.facecam_crop ? ` [Crop: ${c.facecam_crop}]` : ' [Framed]';
       const fitText = c.facecam_fit ? ` [Fit: ${c.facecam_fit}]` : ' [Fit: cover]';
-      const splitText = c.b_top_pct ? ` [Split: ${c.b_top_pct}%]` : '';
-      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📹 Facecam: ${fcFilename}${cropText}${fitText}${splitText}</span>`;
+      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📸 Facecam: ${fcFilename}${cropText}${fitText}</span>`;
     } else {
-      fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">📹 No Facecam (Stream Only)</span>`;
+      fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">👤 No Facecam (Stream Only)</span>`;
     }
+
+    const gpText = (c.gameplay_x !== undefined && c.gameplay_x !== 'auto') ? `🎮 Gameplay: X=${c.gameplay_x}px` : '🎮 Gameplay: Center';
+    const fontInfo = c.text_font ? ` · Font: ${c.text_font}` : '';
+    const colorDot = c.text_color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.text_color};border:1px solid #000;margin-left:4px;vertical-align:middle"></span>` : '';
 
     let resultHtml = '';
     if(existingOutput){
       resultHtml = `
-        <div class="qcard-result">
-          <span style="color:var(--ok);font-weight:600">✓ Rendered: ${existingOutput.split('/').pop()}</span>
-          <div style="display:flex;gap:8px">
-            <a class="btn sm success" href="/${existingOutput}" download>⬇ Download</a>
-            <button class="btn sm" onclick="window.open('/${existingOutput}', '_blank')">↗ Open</button>
+        <div class="qcard-result" style="display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:10px 14px;margin-top:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <video class="qcard-video-preview" controls playsinline preload="metadata" style="height:110px;aspect-ratio:9/16;border-radius:6px;background:#000;border:1px solid var(--line);box-shadow:0 4px 10px rgba(0,0,0,0.5)">
+              <source src="/${existingOutput}?t=${Date.now()}" type="video/mp4">
+            </video>
+            <div>
+              <div style="color:var(--ok);font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">
+                <span>✓ Short Ready: ${stem}.mp4</span>
+                <span class="live-pill" style="font-size:10px;background:rgba(16,185,129,0.2);color:var(--ok);padding:1px 6px">1080×1920</span>
+              </div>
+              <div style="font-size:11px;color:var(--mut);margin-top:4px">
+                Includes 9:16 framing, animated captions & sound
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <a class="btn sm success" href="/${existingOutput}" download style="text-decoration:none;padding:6px 12px;font-size:12px;font-weight:600">⬇ Download Short</a>
+            <button class="btn sm" onclick="window.open('/${existingOutput}', '_blank')" style="font-size:12px">↗ Open Player</button>
           </div>
         </div>
       `;
     }
 
     return `
-      <div class="queue-card ${existingOutput ? 'done' : ''}" id="qcard-${originalIdx}">
-        <div class="qcard-main">
-          <div class="qcard-left">
-            <div class="qcard-num">#${i+1}</div>
-            <div class="qcard-info">
-              <div class="qcard-title">
-                <span>${c.file}</span>
+      <div class="queue-card ${existingOutput ? 'done' : ''}" id="qcard-${originalIdx}" style="padding:14px 16px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px">
+        <div class="qcard-main" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+          <div class="qcard-left" style="display:flex;align-items:center;gap:14px;flex:1;min-width:280px">
+            <div class="qcard-num" style="width:30px;height:30px;border-radius:50%;background:var(--field);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--acc)">#${i+1}</div>
+            <div class="qcard-info" style="flex:1">
+              <div class="qcard-title" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
+                <span style="font-weight:700;font-size:13.5px">${c.file}</span>
                 <span class="clip-tag">${c.event_type || 'highlight'}</span>
-                <span class="clip-tag" style="background:#1e3a8a;color:#93c5fd">Layout ${c.layout}</span>
+                <span class="clip-tag" style="background:#1e3a8a;color:#93c5fd">Layout ${c.layout || L}</span>
+                <span class="clip-tag" style="background:#374151;color:#d1d5db">${gpText}</span>
                 ${fcBadgeHtml}
               </div>
-              <div class="qcard-hook">“${c.hook || 'NO HOOK TEXT'}”</div>
-              <div class="qcard-meta">
-                <span>⏱ ${(+c.start_sec).toFixed(1)}s – ${(+c.end_sec).toFixed(1)}s (${duration}s)</span>
+              <div class="qcard-hook" style="font-family:'Anton',Impact,sans-serif;font-size:15px;color:#facc15;margin:3px 0;letter-spacing:0.4px">
+                “${c.hook_en || c.hook || 'NO HOOK TEXT'}”
+                <span style="font-family:system-ui;font-size:11px;font-weight:normal;color:var(--mut);margin-left:8px">${fontInfo}${colorDot}</span>
+              </div>
+              <div class="qcard-meta" style="color:var(--mut);font-size:11.5px;display:flex;gap:10px;align-items:center">
+                <span>⏱ ${(+c.start_sec).toFixed(1)}s – ${(+c.end_sec).toFixed(1)}s (${duration}s duration)</span>
+                <span>📐 1080×1920 (9:16)</span>
               </div>
             </div>
           </div>
-          <div class="qcard-actions">
-            <button class="btn sm p" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})">
-              🎬 Render Clip
+          <div class="qcard-actions" style="display:flex;gap:8px;align-items:center">
+            <button class="btn sm p" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})" style="padding:8px 14px;font-weight:600">
+              ${existingOutput ? '🔄 Re-render / Update' : '🎬 Render Clip'}
             </button>
-            <button class="btn sm" onclick="openEditClipModal(${originalIdx})">
+            <button class="btn sm" onclick="openEditClipModal(${originalIdx})" style="padding:8px 12px">
               ✏️ Edit Clip & Facecam
             </button>
           </div>
@@ -2647,6 +2693,10 @@ async function renderSingleClip(idx){
     facecam_crop: c.facecam_crop || '',
     facecam_fit: c.facecam_fit || 'cover',
     b_top_pct: c.b_top_pct || null,
+    gameplay_x: c.gameplay_x !== undefined ? c.gameplay_x : (V.B_MAIN_X || 'auto'),
+    text_font: c.text_font || 'Anton',
+    text_color: c.text_color || '#ffffff',
+    text_size: c.text_size || null,
     start_sec: c.start_sec,
     end_sec: c.end_sec
   };
@@ -2659,26 +2709,120 @@ async function renderSingleClip(idx){
   await saveCurrentConfig();
   await job({type:'render', clips:[clipPayload]}, 'Rendering single clip: ' + c.file);
 
-  if(btn){ btn.disabled = false; btn.textContent = '🎬 Re-render Clip'; }
+  if(btn){ btn.disabled = false; btn.textContent = '🔄 Re-render / Update'; }
   if(card) card.classList.remove('rendering');
 
   const stem = c.file.replace(/\.[^/.]+$/, '');
-  const outPath = `out/${stem}_${clipPayload.layout}.mp4`;
+  const outPath = `out/${stem}.mp4`;
   singleRenderOutputs[c.file] = outPath;
   if(card) card.classList.add('done');
   await loadRenderedOutputs();
+}
 
-  const resContainer = $(`#qcard-res-${idx}`);
-  if(resContainer){
-    resContainer.innerHTML = `
-      <div class="qcard-result" style="animation:fadeIn 0.2s ease">
-        <span style="color:var(--ok);font-weight:600">✓ Rendered: ${outPath.split('/').pop()}</span>
-        <div style="display:flex;gap:8px">
-          <a class="btn sm success" href="/${outPath}" download>⬇ Download Video</a>
-          <button class="btn sm" onclick="window.open('/${outPath}', '_blank')">↗ Open Player</button>
-        </div>
-      </div>
-    `;
+let modalGameplayX = 'auto';
+let isDraggingGpBox = false;
+let gpStartX = 0, gpStartLeft = 0;
+
+function initModalGameplayFraming(){
+  const img = $('#modal-gp-img');
+  const box = $('#modal-gp-box');
+  const monitor = $('#modal-gp-monitor');
+  if(!img || !box || !monitor) return;
+
+  img.src = '/api/frame?source=' + encodeURIComponent(currentSource);
+  img.onload = () => updateModalGameplayBoxPosition();
+
+  // Presets
+  const btnL = $('#modal-gp-btn-left');
+  const btnC = $('#modal-gp-btn-center');
+  const btnR = $('#modal-gp-btn-right');
+
+  if(btnL) btnL.onclick = () => {
+    modalGameplayX = 0;
+    updateModalGameplayBoxPosition();
+    updateModalLivePreview();
+  };
+  if(btnC) btnC.onclick = () => {
+    modalGameplayX = 'auto';
+    updateModalGameplayBoxPosition();
+    updateModalLivePreview();
+  };
+  if(btnR) btnR.onclick = () => {
+    const natW = (frameImg && frameImg.naturalWidth) || 1920;
+    const natH = (frameImg && frameImg.naturalHeight) || 1080;
+    const shortsW = Math.round(natH * 1080 / 1920);
+    modalGameplayX = Math.round(natW - shortsW);
+    updateModalGameplayBoxPosition();
+    updateModalLivePreview();
+  };
+
+  box.onpointerdown = e => {
+    isDraggingGpBox = true;
+    box.setPointerCapture(e.pointerId);
+    gpStartX = e.clientX;
+    gpStartLeft = box.offsetLeft;
+    e.stopPropagation();
+  };
+
+  box.onpointermove = e => {
+    if(!isDraggingGpBox) return;
+    const mw = monitor.clientWidth || 320;
+    const natW = (frameImg && frameImg.naturalWidth) || 1920;
+    const scale = mw / natW;
+    const dx = e.clientX - gpStartX;
+    let newLeft = Math.max(0, Math.min(mw - box.offsetWidth, gpStartLeft + dx));
+    box.style.left = newLeft + 'px';
+    modalGameplayX = Math.round(newLeft / scale);
+    const coordsEl = $('#modal-gp-box-coords');
+    if(coordsEl) coordsEl.textContent = `X: ${modalGameplayX}px`;
+    const statusEl = $('#modal-gp-status');
+    if(statusEl) statusEl.textContent = `X: ${modalGameplayX}px ▾`;
+    updateModalLivePreview();
+  };
+
+  box.onpointerup = () => {
+    if(isDraggingGpBox) isDraggingGpBox = false;
+  };
+  box.onpointercancel = () => {
+    if(isDraggingGpBox) isDraggingGpBox = false;
+  };
+}
+
+function updateModalGameplayBoxPosition(){
+  const img = $('#modal-gp-img');
+  const box = $('#modal-gp-box');
+  const monitor = $('#modal-gp-monitor');
+  if(!img || !box || !monitor) return;
+
+  const mw = monitor.clientWidth || img.clientWidth || 320;
+  const mh = monitor.clientHeight || img.clientHeight || 180;
+  const natW = (frameImg && frameImg.naturalWidth) || 1920;
+  const natH = (frameImg && frameImg.naturalHeight) || 1080;
+  const shortsW = Math.round(natH * 1080 / 1920);
+  const scale = mw / natW;
+  const boxW = Math.max(40, Math.round(shortsW * scale));
+  box.style.width = boxW + 'px';
+  box.style.height = mh + 'px';
+
+  if(modalGameplayX === 'auto' || modalGameplayX === undefined || modalGameplayX === null){
+    box.style.left = Math.round((mw - boxW) / 2) + 'px';
+    const coordsEl = $('#modal-gp-box-coords');
+    if(coordsEl) coordsEl.textContent = 'Center (Auto)';
+    const statusEl = $('#modal-gp-status');
+    if(statusEl) statusEl.textContent = 'Center (Auto) ▾';
+  } else if(modalGameplayX === 0 || modalGameplayX === '0'){
+    box.style.left = '0px';
+    const coordsEl = $('#modal-gp-box-coords');
+    if(coordsEl) coordsEl.textContent = 'Left (X:0)';
+    const statusEl = $('#modal-gp-status');
+    if(statusEl) statusEl.textContent = 'Left ▾';
+  } else {
+    const leftPx = Math.max(0, Math.min(mw - boxW, Math.round((+modalGameplayX) * scale)));
+    box.style.left = leftPx + 'px';
+    const coordsEl = $('#modal-gp-box-coords');
+    if(coordsEl) coordsEl.textContent = `X: ${modalGameplayX}px`;
+    const statusEl = $('#modal-gp-status');
+    if(statusEl) statusEl.textContent = `X: ${modalGameplayX}px ▾`;
   }
 }
 
@@ -2690,10 +2834,58 @@ function openEditClipModal(idx){
 
   $('#clip-edit-title').textContent = `✏️ Edit Clip & Facecam: ${c.file}`;
   $('#edit-clip-file-info').textContent = `${c.file} — ${(+c.start_sec).toFixed(1)}s to ${(+c.end_sec).toFixed(1)}s`;
-  $('#edit-clip-hook').value = c.hook_en || '';
-  $('#edit-clip-layout').value = c.layout || L;
-  $('#edit-clip-start').value = (+c.start_sec).toFixed(1);
-  $('#edit-clip-end').value = (+c.end_sec).toFixed(1);
+  $('#edit-clip-hook').value = c.hook_en || c.hook || '';
+
+  // Layout radio buttons
+  const curL = c.layout || L || 'B';
+  const radioB = $('#modal-layout-radio-b');
+  const radioA = $('#modal-layout-radio-a');
+  if(curL === 'A'){ if(radioA) radioA.checked = true; }
+  else { if(radioB) radioB.checked = true; }
+
+  document.querySelectorAll('input[name="modal-layout-radio"]').forEach(r => {
+    r.onchange = () => {
+      updateModalLivePreview();
+      if(modalActiveRatio === 'slot') setModalCropRatio('slot');
+    };
+  });
+
+  // Font family and color
+  if($('#modal-font-family')) $('#modal-font-family').value = c.text_font || 'Anton';
+  if($('#modal-font-color')) $('#modal-font-color').value = c.text_color || '#ffffff';
+  if($('#modal-font-family')) $('#modal-font-family').onchange = () => updateModalLivePreview();
+  if($('#modal-font-color')) $('#modal-font-color').oninput = () => updateModalLivePreview();
+
+  // Text size slider (default small 70px)
+  const textSizeRange = $('#modal-text-size-range');
+  const textSizeVal = $('#modal-text-size-val');
+  if(textSizeRange){
+    const initSize = c.text_size || 70;
+    textSizeRange.value = initSize;
+    if(textSizeVal) textSizeVal.textContent = initSize + 'px';
+    textSizeRange.oninput = e => {
+      if(textSizeVal) textSizeVal.textContent = e.target.value + 'px';
+      updateModalLivePreview();
+    };
+  }
+
+  // Text position slider
+  const textPosRange = $('#modal-text-pos-range');
+  const textPosVal = $('#modal-text-pos-val');
+  if(textPosRange){
+    const initPos = c.text_pos !== undefined ? c.text_pos : 15;
+    textPosRange.value = initPos;
+    if(textPosVal) textPosVal.textContent = initPos + '%';
+    textPosRange.oninput = e => {
+      if(textPosVal) textPosVal.textContent = e.target.value + '%';
+      updateModalLivePreview();
+    };
+  }
+
+  // Gameplay framing
+  modalGameplayX = c.gameplay_x !== undefined ? c.gameplay_x : (V.B_MAIN_X || 'auto');
+  initModalGameplayFraming();
+  setTimeout(updateModalGameplayBoxPosition, 50);
 
   // Populate facecam select dropdown
   const fcSel = $('#modal-fc-select');
@@ -2709,42 +2901,10 @@ function openEditClipModal(idx){
   modalBTopPct = c.b_top_pct || +V.B_TOP_PCT || 35;
   setModalTopPct(modalBTopPct);
   setModalFitMode(modalFcFit);
-  setModalCropRatio('free');
-
-  const textSizeRange = $('#modal-text-size-range');
-  const textSizeVal = $('#modal-text-size-val');
-  const textPosRange = $('#modal-text-pos-range');
-  const textPosVal = $('#modal-text-pos-val');
-
-  if(textSizeRange){
-    textSizeRange.value = +V.MEME_SIZE || 120;
-    if(textSizeVal) textSizeVal.textContent = textSizeRange.value + 'px';
-    textSizeRange.oninput = e => {
-      V.MEME_SIZE = +e.target.value;
-      if(textSizeVal) textSizeVal.textContent = e.target.value + 'px';
-      syncInputs();
-      updateModalLivePreview();
-      draw();
-    };
-  }
-
-  if(textPosRange){
-    textPosRange.value = +V.MEME_Y_PCT || 15;
-    if(textPosVal) textPosVal.textContent = textPosRange.value + '%';
-    textPosRange.oninput = e => {
-      V.MEME_Y_PCT = +e.target.value;
-      if(textPosVal) textPosVal.textContent = e.target.value + '%';
-      syncInputs();
-      updateModalLivePreview();
-      draw();
-    };
-  }
+  modalActiveRatio = c.fc_ratio || (modalFcCropCoords ? 'free' : 'slot');
+  setModalCropRatio(modalActiveRatio);
 
   $('#edit-clip-hook').oninput = () => updateModalLivePreview();
-  $('#edit-clip-layout').onchange = () => {
-    updateModalLivePreview();
-    if(modalActiveRatio === 'slot') setModalCropRatio('slot');
-  };
 
   if(modalFcPath){
     fcSel.value = modalFcPath;
@@ -2862,7 +3022,7 @@ function setModalTopPct(pct, syncRange = true){
   }
 
   if(modalActiveRatio === 'slot'){
-    const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
+    const curLayout = document.querySelector('input[name="modal-layout-radio"]:checked')?.value || 'B';
     if(curLayout === 'B'){
       const topH = 1920 * (modalBTopPct / 100);
       modalRatioVal = 1080 / topH;
@@ -2897,7 +3057,7 @@ function setModalCropRatio(ratio){
   const btn = $('#' + activeBtnId);
   if(btn) btn.classList.add('active');
 
-  const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
+  const curLayout = document.querySelector('input[name="modal-layout-radio"]:checked')?.value || 'B';
   if(ratio === 'free'){
     modalRatioVal = null;
   } else if(ratio === '1:1'){
@@ -2997,11 +3157,21 @@ function initFacecamFramingBox(){
     fcCropBox.style.width = bw + 'px';
     fcCropBox.style.height = bh + 'px';
   } else {
-    // Default: centered 4:3 / 16:9 framing box over the facecam
-    const defW = Math.round(Math.min(modalFcNaturalW, modalFcNaturalH * 1.1));
-    const defH = Math.round(Math.min(modalFcNaturalH, defW * 0.85));
+    // Default: match slot or sensible top-weighted framing box over the facecam
+    const curLayout = document.querySelector('input[name="modal-layout-radio"]:checked')?.value || 'B';
+    let targetRatio = 16 / 9;
+    if(curLayout === 'B'){
+      const topPct = modalBTopPct || +V.B_TOP_PCT || 35;
+      targetRatio = 1080 / (1920 * (topPct / 100));
+    }
+    let defW = Math.round(modalFcNaturalW * 0.95);
+    let defH = Math.round(defW / targetRatio);
+    if(defH > modalFcNaturalH){
+      defH = Math.round(modalFcNaturalH * 0.95);
+      defW = Math.round(defH * targetRatio);
+    }
     const defX = Math.round((modalFcNaturalW - defW) / 2);
-    const defY = Math.round((modalFcNaturalH - defH) / 2);
+    const defY = Math.round(Math.max(0, (modalFcNaturalH - defH) * 0.15)); // top 15% where face is
 
     fcCropBox.style.left = Math.round(defX * scaleX) + 'px';
     fcCropBox.style.top = Math.round(defY * scaleY) + 'px';
@@ -3047,15 +3217,17 @@ function updateModalLivePreview(){
   ctx.fillStyle = '#0a0b0d';
   ctx.fillRect(0, 0, W, H);
 
-  const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
+  const curLayout = document.querySelector('input[name="modal-layout-radio"]:checked')?.value || 'B';
   const curHook = $('#edit-clip-hook') ? $('#edit-clip-hook').value : '';
+  const textFont = $('#modal-font-family')?.value || 'Anton';
+  const textColor = $('#modal-font-color')?.value || '#ffffff';
+  const textSize = +($('#modal-text-size-range')?.value) || 70;
+  const textPos = +($('#modal-text-pos-range')?.value) || 15;
 
   const phoneDivider = $('#modal-phone-divider');
-  const heightRow = $('#modal-top-pct-range') ? $('#modal-top-pct-range').closest('div') : null;
 
   if(curLayout === 'B'){
     if(phoneDivider) phoneDivider.style.display = 'flex';
-    if(heightRow) heightRow.style.display = 'flex';
 
     const topPct = modalBTopPct || +V.B_TOP_PCT || 35;
     const topH = Math.round(H * topPct / 100);
@@ -3088,12 +3260,12 @@ function updateModalLivePreview(){
         const dy = (topH - dh) / 2;
         ctx.drawImage(fcImg, sx, sy, sw, sh, dx, dy, dw, dh);
       } else {
-        // cover (default)
+        // cover (default: fills slot, top-anchored so face/head is never cut off)
         const scale = Math.max(W / sw, topH / sh);
         const dw = sw * scale;
         const dh = sh * scale;
         const dx = (W - dw) / 2;
-        const dy = (topH - dh) / 2;
+        const dy = (dh > topH) ? 0 : (topH - dh) / 2;
         ctx.save();
         ctx.beginPath();
         ctx.rect(0, 0, W, topH);
@@ -3121,6 +3293,9 @@ function updateModalLivePreview(){
         ch = natW * (botH / W);
       }
       let cx = (natW - cw) / 2;
+      if(modalGameplayX !== undefined && modalGameplayX !== 'auto' && !isNaN(+modalGameplayX)){
+        cx = Math.max(0, Math.min(natW - cw, +modalGameplayX));
+      }
       ctx.drawImage(frameImg, cx, 0, cw, ch, 0, topH, W, botH);
     } else {
       ctx.fillStyle = '#14171d';
@@ -3138,14 +3313,13 @@ function updateModalLivePreview(){
     // 4. Draw Hook Text Headline
     if(curHook.trim()){
       ctx.save();
-      const memeSize = Math.max(12, Math.round((+V.MEME_SIZE || 120) * (W / 1080) * 1.6));
-      const memeBorder = Math.max(2, Math.round((+V.MEME_BORDER || 10) * (W / 1080) * 1.6));
-      const memeYPct = +V.MEME_Y_PCT || 15;
-      const hookY = Math.min(H - 30, topH + Math.round(botH * (memeYPct / 100)));
-      ctx.font = `900 ${memeSize}px Anton, Impact, sans-serif`;
+      const memeSize = Math.max(10, Math.round(textSize * (W / 1080) * 1.5));
+      const memeBorder = Math.max(1.5, Math.round((+V.MEME_BORDER || 10) * (W / 1080) * 1.5));
+      const hookY = Math.min(H - 30, topH + Math.round(botH * (textPos / 100)));
+      ctx.font = `900 ${memeSize}px "${textFont}", Impact, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = textColor;
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = memeBorder;
       ctx.strokeText(curHook.toUpperCase(), W / 2, hookY);
@@ -3155,7 +3329,6 @@ function updateModalLivePreview(){
   } else {
     // Layout A
     if(phoneDivider) phoneDivider.style.display = 'none';
-    if(heightRow) heightRow.style.display = 'none';
     if(frameImg && frameImg.complete && frameImg.naturalWidth){
       ctx.drawImage(frameImg, 0, 0, W, H);
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
@@ -3181,12 +3354,19 @@ function updateModalLivePreview(){
       ctx.fillRect(fcX, fcY, fcW, fcH);
       if(modalFcFit === 'stretch'){
         ctx.drawImage(fcImg, sx, sy, sw, sh, fcX, fcY, fcW, fcH);
+      } else if(modalFcFit === 'fit'){
+        const scale = Math.min(fcW / sw, fcH / sh);
+        const dw = sw * scale;
+        const dh = sh * scale;
+        const dx = fcX + (fcW - dw) / 2;
+        const dy = fcY + (fcH - dh) / 2;
+        ctx.drawImage(fcImg, sx, sy, sw, sh, dx, dy, dw, dh);
       } else {
         const scale = Math.max(fcW / sw, fcH / sh);
         const dw = sw * scale;
         const dh = sh * scale;
         const dx = fcX + (fcW - dw) / 2;
-        const dy = fcY + (fcH - dh) / 2;
+        const dy = fcY + ((dh > fcH) ? 0 : (fcH - dh) / 2);
         ctx.beginPath();
         ctx.rect(fcX, fcY, fcW, fcH);
         ctx.clip();
@@ -3200,14 +3380,13 @@ function updateModalLivePreview(){
 
     if(curHook.trim()){
       ctx.save();
-      const memeSize = Math.max(12, Math.round((+V.MEME_SIZE || 120) * (W / 1080) * 1.6));
-      const memeBorder = Math.max(2, Math.round((+V.MEME_BORDER || 10) * (W / 1080) * 1.6));
-      const memeYPct = +V.MEME_Y_PCT || 12;
-      const hookY = Math.round(H * (memeYPct / 100));
-      ctx.font = `900 ${memeSize}px Anton, Impact, sans-serif`;
+      const memeSize = Math.max(10, Math.round(textSize * (W / 1080) * 1.5));
+      const memeBorder = Math.max(1.5, Math.round((+V.MEME_BORDER || 10) * (W / 1080) * 1.5));
+      const hookY = Math.round(H * (textPos / 100));
+      ctx.font = `900 ${memeSize}px "${textFont}", Impact, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = textColor;
       ctx.strokeStyle = '#000000';
       ctx.lineWidth = memeBorder;
       ctx.strokeText(curHook.toUpperCase(), W / 2, hookY);
@@ -3469,14 +3648,18 @@ function applyModalEditsToClip(){
   if(activeEditingClipIdx < 0 || !clips[activeEditingClipIdx]) return;
   const c = clips[activeEditingClipIdx];
   c.hook_en = $('#edit-clip-hook').value;
-  c.layout = $('#edit-clip-layout').value;
-  c.start_sec = +$('#edit-clip-start').value;
-  c.end_sec = +$('#edit-clip-end').value;
+  c.layout = document.querySelector('input[name="modal-layout-radio"]:checked')?.value || 'B';
   c.b_top_pct = modalBTopPct;
+  c.gameplay_x = modalGameplayX !== undefined ? modalGameplayX : 'auto';
+  c.text_font = $('#modal-font-family') ? $('#modal-font-family').value : 'Anton';
+  c.text_color = $('#modal-font-color') ? $('#modal-font-color').value : '#ffffff';
+  c.text_size = $('#modal-text-size-range') ? +$('#modal-text-size-range').value : 70;
+  c.text_pos = $('#modal-text-pos-range') ? +$('#modal-text-pos-range').value : 15;
 
   if(modalFcActive && modalFcPath){
     c.facecam = modalFcPath;
     c.facecam_fit = modalFcFit || 'cover';
+    c.fc_ratio = modalActiveRatio;
     if(modalFcCropCoords){
       c.fc_crop_coords = modalFcCropCoords;
       c.facecam_crop = `${modalFcCropCoords.w}:${modalFcCropCoords.h}:${modalFcCropCoords.x}:${modalFcCropCoords.y}`;
@@ -3488,6 +3671,7 @@ function applyModalEditsToClip(){
     c.facecam_crop = '';
     c.facecam_fit = 'cover';
     c.fc_crop_coords = null;
+    c.fc_ratio = 'slot';
   }
 }
 
@@ -3567,7 +3751,19 @@ async function loadRenderedOutputs(){
     const res = await api('/api/outputs');
     if(Array.isArray(res)){
       renderedOutputsList = res;
-      renderGalleryGrid(renderedOutputsList);
+      res.forEach(item => {
+        const filename = typeof item === 'string' ? item.split('/').pop() : item.name;
+        const stem = filename.replace(/\.(mp4|webm|mkv)$/i, '').replace(/(_B|_A)$/i, '');
+        const matchClip = clips.find(c => {
+          const cStem = c.file.replace(/\.(mp4|webm|mkv)$/i, '');
+          return cStem === stem || filename === c.file || filename.startsWith(cStem);
+        });
+        if(matchClip){
+          const p = typeof item === 'string' ? item : item.path;
+          singleRenderOutputs[matchClip.file] = p;
+        }
+      });
+      renderStep4Queue();
     }
   }catch(e){
     console.error('Failed to load rendered outputs:', e);
