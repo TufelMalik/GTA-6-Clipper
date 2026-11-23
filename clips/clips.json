@@ -12,7 +12,16 @@
     "speech_language": "none",
     "music_audible": true,
     "confidence": 0.95,
-    "selected": true
+    "selected": true,
+    "layout": "B",
+    "facecam": "input/WhatsApp_Video_2026-11-22_at_10.47.27_AM.mp4",
+    "fc_crop_coords": {
+      "w": 478,
+      "h": 748,
+      "x": 0,
+      "y": 78
+    },
+    "facecam_crop": "478:748:0:78"
   },
   {
     "file": "clip_02.mp4",

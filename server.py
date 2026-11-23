@@ -500,6 +500,25 @@ def get_index():
     return FileResponse(str(index_file), media_type="text/html")
 
 
+@app.api_route("/favicon.ico", methods=["GET", "HEAD"])
+def get_favicon_ico():
+    ico = BASE_DIR / "favicon.ico"
+    if ico.exists():
+        return FileResponse(str(ico), media_type="image/x-icon")
+    svg = BASE_DIR / "favicon.svg"
+    if svg.exists():
+        return FileResponse(str(svg), media_type="image/svg+xml")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
+@app.api_route("/favicon.svg", methods=["GET", "HEAD"])
+def get_favicon_svg():
+    svg = BASE_DIR / "favicon.svg"
+    if svg.exists():
+        return FileResponse(str(svg), media_type="image/svg+xml")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
+
 @app.get("/api/inputs")
 def get_inputs():
     res = []
