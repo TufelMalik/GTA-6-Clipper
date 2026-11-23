@@ -461,50 +461,86 @@ main, .wizard-main{
 
 /* Selected Clips Queue in Step 4 */
 .queue-section{margin-bottom:20px}
-.queue-cards{display:flex;flex-direction:column;gap:12px}
+.queue-cards{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
+  gap:20px;
+  justify-content:start;
+  align-items:stretch;
+}
+@media (max-width: 640px){
+  .queue-cards{
+    grid-template-columns:1fr;
+    justify-content:stretch;
+  }
+}
 .queue-card{
-  background:var(--field);
+  background:var(--panel2);
   border:1px solid var(--line);
   border-radius:var(--r);
-  padding:14px 18px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  transition:all 0.2s ease;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+  position:relative;
+}
+.queue-card:hover{
+  border-color:var(--line-light);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.45);
+}
+.queue-card.rendering{
+  border-color:var(--warn);
+  background:#f59e0b08;
+  box-shadow:0 0 0 2px rgba(245,158,11,0.25);
+}
+.queue-card.done{
+  border-color:rgba(16,185,129,0.45);
+  background:#10b98108;
+}
+.qcard-media{
+  position:relative;
+  width:100%;
+  aspect-ratio:9/16;
+  background:#050608;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.qcard-media video{
+  width:100%;
+  height:100%;
+  display:block;
+  background:#000;
+}
+.qcard-body{
+  padding:14px;
   display:flex;
   flex-direction:column;
   gap:10px;
-  transition:all 0.15s ease;
-}
-.queue-card:hover{border-color:var(--line-light)}
-.queue-card.rendering{border-color:var(--warn);background:#f59e0b08}
-.queue-card.done{border-color:var(--ok);background:#10b98108}
-.qcard-main{display:flex;flex-direction:column;gap:10px}
-.qcard-left{display:flex;align-items:flex-start;gap:10px;width:100%}
-.qcard-num{
-  width:26px;
-  height:26px;
-  min-width:26px;
-  border-radius:50%;
-  background:var(--panel2);
-  border:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:700;
-  font-size:11px;
-  color:var(--mut);
-}
-.qcard-info{flex:1;min-width:0}
-.qcard-title{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px}
-.qcard-hook{font-family:Anton,Impact,sans-serif;font-size:14px;color:#facc15;letter-spacing:0.5px;line-height:1.25}
-.qcard-meta{color:var(--mut);font-size:11px;display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
-.qcard-actions{display:flex;gap:6px;align-items:center;width:100%}
-.qcard-actions .btn{flex:1;justify-content:center;font-size:11px;padding:6px 8px}
-.qcard-result{
-  border-top:1px solid var(--line);
-  padding-top:8px;
-  display:flex;
-  align-items:center;
+  flex:1;
   justify-content:space-between;
+}
+.qcard-hook-box{
+  background:rgba(0,0,0,0.35);
+  border-radius:6px;
+  padding:8px 10px;
+  border-left:3px solid #facc15;
+}
+.qcard-hook-text{
+  font-family:'Anton',Impact,sans-serif;
+  font-size:14.5px;
+  color:#facc15;
+  line-height:1.2;
+  letter-spacing:0.3px;
+  word-break:break-word;
+}
+.qcard-actions-group{
+  display:flex;
+  flex-direction:column;
   gap:8px;
-  flex-wrap:wrap;
+  padding-top:10px;
+  border-top:1px solid var(--line);
 }
 
 /* Facecam Source Framing in Edit Clip Modal */
@@ -1531,7 +1567,7 @@ main, .wizard-main{
           </div>
         </div>
 
-        <div class="queue-cards" id="step4-queue-cards" style="display:flex;flex-direction:column;gap:12px">
+        <div class="queue-cards" id="step4-queue-cards">
           <!-- Rendered dynamically -->
         </div>
       </div>
@@ -3396,7 +3432,7 @@ function renderStep4Queue(){
   if(countSub) countSub.textContent = `${selectedClips.length} clips ready to export`;
 
   if(!selectedClips.length){
-    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--mut)">No clips selected. Please go back to Step 2 to select highlights.</div>';
+    container.innerHTML = '<div style="text-align:center;padding:36px 20px;color:var(--mut);background:var(--field);border:1px dashed var(--line);border-radius:var(--r);grid-column:1/-1">No clips selected. Please go back to Step 2 to select highlights.</div>';
     return;
   }
 
@@ -3404,82 +3440,118 @@ function renderStep4Queue(){
     const originalIdx = clips.findIndex(x => x.file === c.file);
     const duration = ((+c.end_sec) - (+c.start_sec)).toFixed(1);
     const stem = c.file.replace(/\.[^/.]+$/, '');
-    const expectedOut = `out/${stem}.mp4`;
-    const existingOutput = singleRenderOutputs[c.file] || (renderedOutputsList.some(o => (typeof o === 'string' ? o : o.path).includes(stem)) ? expectedOut : null);
+    const matchedOutItem = renderedOutputsList.find(o => {
+      const p = typeof o === 'string' ? o : o.path;
+      return p.includes(stem);
+    });
+    const matchedPath = matchedOutItem ? (typeof matchedOutItem === 'string' ? matchedOutItem : matchedOutItem.path) : null;
+    const existingOutput = singleRenderOutputs[c.file] || matchedPath;
 
     let fcBadgeHtml = '';
     if(c.facecam){
       const fcFilename = c.facecam.split('/').pop();
-      const cropText = c.facecam_crop ? ` [Crop: ${c.facecam_crop}]` : ' [Framed]';
-      const fitText = c.facecam_fit ? ` [Fit: ${c.facecam_fit}]` : ' [Fit: cover]';
-      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📸 Facecam: ${fcFilename}${cropText}${fitText}</span>`;
+      const cropText = c.facecam_crop ? ' [Crop]' : '';
+      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0" title="${fcFilename}">📸 ${fcFilename}${cropText}</span>`;
     } else {
-      fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">👤 No Facecam (Stream Only)</span>`;
+      fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">👤 No Facecam</span>`;
     }
 
-    const gpText = (c.gameplay_x !== undefined && c.gameplay_x !== 'auto') ? `🎮 Gameplay: X=${c.gameplay_x}px` : '🎮 Gameplay: Center';
-    const fontInfo = c.text_font ? ` · Font: ${c.text_font}` : '';
-    const colorDot = c.text_color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.text_color};border:1px solid #000;margin-left:4px;vertical-align:middle"></span>` : '';
+    const gpText = (c.gameplay_x !== undefined && c.gameplay_x !== 'auto') ? `🎮 X=${c.gameplay_x}px` : '🎮 Gameplay: Center';
+    const fontInfo = c.text_font ? `Font: ${c.text_font}` : 'Font: Anton';
+    const colorDot = c.text_color ? `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${c.text_color};border:1px solid #000;margin-left:5px;vertical-align:middle" title="${c.text_color}"></span>` : '';
 
-    let resultHtml = '';
-    if(existingOutput){
-      resultHtml = `
-        <div class="qcard-result" style="display:flex;align-items:center;justify-content:space-between;gap:14px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:10px 14px;margin-top:10px">
-          <div style="display:flex;align-items:center;gap:12px">
-            <video class="qcard-video-preview" controls playsinline preload="metadata" style="height:110px;aspect-ratio:9/16;border-radius:6px;background:#000;border:1px solid var(--line);box-shadow:0 4px 10px rgba(0,0,0,0.5)">
-              <source src="/${existingOutput}?t=${Date.now()}" type="video/mp4">
-            </video>
-            <div>
-              <div style="color:var(--ok);font-weight:700;font-size:13px;display:flex;align-items:center;gap:6px">
-                <span>✓ Short Ready: ${stem}.mp4</span>
-                <span class="live-pill" style="font-size:10px;background:rgba(16,185,129,0.2);color:var(--ok);padding:1px 6px">1080×1920</span>
-              </div>
-              <div style="font-size:11px;color:var(--mut);margin-top:4px">
-                Includes 9:16 framing, animated captions & sound
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <a class="btn sm success" href="/${existingOutput}" download style="text-decoration:none;padding:6px 12px;font-size:12px;font-weight:600">⬇ Download Short</a>
-            <button class="btn sm" onclick="window.open('/${existingOutput}', '_blank')" style="font-size:12px">↗ Open Player</button>
-          </div>
-        </div>
-      `;
-    }
+    const videoSrc = existingOutput ? `/${existingOutput}?t=${Date.now()}` : `/clips/${c.file}`;
 
     return `
-      <div class="queue-card ${existingOutput ? 'done' : ''}" id="qcard-${originalIdx}" style="padding:14px 16px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px">
-        <div class="qcard-main" style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-          <div class="qcard-left" style="display:flex;align-items:center;gap:14px;flex:1;min-width:280px">
-            <div class="qcard-num" style="width:30px;height:30px;border-radius:50%;background:var(--field);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--acc)">#${i+1}</div>
-            <div class="qcard-info" style="flex:1">
-              <div class="qcard-title" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-                <span style="font-weight:700;font-size:13.5px">${c.file}</span>
-                <span class="clip-tag">${c.event_type || 'highlight'}</span>
-                <span class="clip-tag" style="background:#1e3a8a;color:#93c5fd">Layout ${c.layout || L}</span>
-                <span class="clip-tag" style="background:#374151;color:#d1d5db">${gpText}</span>
-                ${fcBadgeHtml}
-              </div>
-              <div class="qcard-hook" style="font-family:'Anton',Impact,sans-serif;font-size:15px;color:#facc15;margin:3px 0;letter-spacing:0.4px">
-                “${c.hook_en || c.hook || 'NO HOOK TEXT'}”
-                <span style="font-family:system-ui;font-size:11px;font-weight:normal;color:var(--mut);margin-left:8px">${fontInfo}${colorDot}</span>
-              </div>
-              <div class="qcard-meta" style="color:var(--mut);font-size:11.5px;display:flex;gap:10px;align-items:center">
-                <span>⏱ ${(+c.start_sec).toFixed(1)}s – ${(+c.end_sec).toFixed(1)}s (${duration}s duration)</span>
-                <span>📐 1080×1920 (9:16)</span>
-              </div>
-            </div>
-          </div>
-          <div class="qcard-actions" style="display:flex;gap:8px;align-items:center">
-            <button class="btn sm p" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})" style="padding:8px 14px;font-weight:600">
-              ${existingOutput ? '🔄 Re-render / Update' : '🎬 Render Clip'}
-            </button>
-            <button class="btn sm" onclick="openEditClipModal(${originalIdx})" style="padding:8px 12px">
-              ✏️ Edit Clip & Facecam
-            </button>
+      <div class="queue-card ${existingOutput ? 'done' : ''}" id="qcard-${originalIdx}">
+        <!-- Top: 9:16 Vertical Video Preview -->
+        <div class="qcard-media">
+          <video
+            id="qcard-vid-${originalIdx}"
+            controls
+            playsinline
+            preload="metadata"
+            style="object-fit:${existingOutput ? 'contain' : 'cover'}"
+            src="${videoSrc}"
+            onplay="document.querySelectorAll('.qcard-media video').forEach(v => { if(v !== this) v.pause(); })"
+          ></video>
+
+          <!-- Top Overlay Badges on Video -->
+          <div style="position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;align-items:center;pointer-events:none;z-index:2">
+            <span style="background:rgba(10,12,18,0.85);backdrop-filter:blur(6px);color:var(--acc);font-weight:800;font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.1)">
+              #${i+1} · ${duration}s
+            </span>
+            ${existingOutput ? `
+              <span style="background:rgba(16,185,129,0.92);color:#fff;font-weight:700;font-size:10.5px;padding:3px 8px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;gap:4px">
+                ✓ 9:16 Short Ready
+              </span>
+            ` : `
+              <span style="background:rgba(30,58,138,0.85);backdrop-filter:blur(6px);color:#93c5fd;font-weight:600;font-size:10.5px;padding:3px 8px;border-radius:6px;border:1px solid rgba(147,197,253,0.3)">
+                🎬 Raw Clip (9:16)
+              </span>
+            `}
           </div>
         </div>
-        <div id="qcard-res-${originalIdx}">${resultHtml}</div>
+
+        <!-- Bottom: Options & Controls Below the Video -->
+        <div class="qcard-body">
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <!-- File name and Event Type -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <span style="font-weight:700;font-size:13.5px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.file}">
+                ${c.file}
+              </span>
+              <span class="clip-tag" style="margin:0;flex-shrink:0">${c.event_type || 'highlight'}</span>
+            </div>
+
+            <!-- Meme Hook Headline -->
+            <div class="qcard-hook-box">
+              <div style="font-size:9.5px;color:var(--mut);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px">Hook Headline</div>
+              <div class="qcard-hook-text">
+                “${c.hook_en || c.hook || 'NO HOOK TEXT'}”
+              </div>
+              <div style="font-size:10.5px;color:var(--mut);margin-top:3px;display:flex;align-items:center">
+                ${fontInfo}${colorDot}
+              </div>
+            </div>
+
+            <!-- Config Chips -->
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <span class="clip-tag" style="background:#1e3a8a;color:#93c5fd">Layout ${c.layout || L}</span>
+              <span class="clip-tag" style="background:#374151;color:#d1d5db">${gpText}</span>
+              ${fcBadgeHtml}
+            </div>
+
+            <!-- Timing & Specs -->
+            <div style="font-size:11px;color:var(--mut);display:flex;justify-content:space-between;align-items:center;padding-top:4px;border-top:1px dashed rgba(255,255,255,0.08)">
+              <span>⏱ ${(+c.start_sec).toFixed(1)}s – ${(+c.end_sec).toFixed(1)}s</span>
+              <span style="color:var(--ok);font-weight:600">📐 1080×1920 (9:16)</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons Group -->
+          <div class="qcard-actions-group">
+            <div style="display:flex;gap:8px">
+              <button class="btn sm p" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})" style="flex:1;justify-content:center;padding:8px 10px;font-weight:600;font-size:12px">
+                ${existingOutput ? '🔄 Re-render Short' : '🎬 Render Short'}
+              </button>
+              <button class="btn sm" onclick="openEditClipModal(${originalIdx})" style="justify-content:center;padding:8px 12px;font-size:12px" title="Edit Clip Settings">
+                ✏️ Edit
+              </button>
+            </div>
+
+            ${existingOutput ? `
+              <div style="display:flex;gap:6px">
+                <a class="btn sm success" href="/${existingOutput}" download style="flex:1;text-decoration:none;justify-content:center;padding:7px 10px;font-size:11.5px;font-weight:600">
+                  ⬇ Download Short
+                </a>
+                <button class="btn sm" onclick="window.open('/${existingOutput}', '_blank')" style="justify-content:center;padding:7px 10px;font-size:11.5px" title="Open in Player">
+                  ↗ Open
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
       </div>
     `;
   }).join('');
@@ -3512,7 +3584,7 @@ async function renderSingleClip(idx){
   await saveCurrentConfig();
   await job({type:'render', clips:[clipPayload]}, 'Rendering single clip: ' + c.file);
 
-  if(btn){ btn.disabled = false; btn.textContent = '🔄 Re-render / Update'; }
+  if(btn){ btn.disabled = false; btn.textContent = '🔄 Re-render Short'; }
   if(card) card.classList.remove('rendering');
 
   const stem = c.file.replace(/\.[^/.]+$/, '');
