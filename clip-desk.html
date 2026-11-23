@@ -240,17 +240,8 @@ main{
   font-size:12px;
 }
 .clip-hook-input:focus{border-color:var(--acc)}
-.clip-fc-row{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px}
-.clip-fc-select{
-  padding:4px 8px;
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:4px;
-  color:#fff;
-  font-size:11px;
-}
 
-/* Step 3: Style & Interactive Facecam */
+/* Step 3: Style & Gameplay Framing */
 .style-grid{display:grid;grid-template-columns:1fr 340px;gap:24px}
 @media(max-width:980px){.style-grid{grid-template-columns:1fr}}
 
@@ -268,30 +259,9 @@ main{
 .layout-card-title{font-weight:600;font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .layout-card-desc{font-size:12px;color:var(--mut)}
 
-/* Mode Pills for Facecam Source */
-.mode-pills{display:flex;gap:10px;margin-bottom:14px}
-.mode-pill{
-  flex:1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  padding:10px 14px;
-  border-radius:var(--r);
-  border:2px solid var(--line);
-  background:var(--field);
-  color:var(--tx);
-  font-weight:600;
-  font-size:12px;
-  cursor:pointer;
-  transition:all 0.15s ease;
-}
-.mode-pill:hover{border-color:var(--line-light);background:var(--panel2)}
-.mode-pill.active{border-color:var(--acc);background:#3b82f612;color:#fff}
-
-/* Draggable Facecam & Shorts Preview Area */
-.facecam-container{margin-top:16px;background:var(--field);border:1px solid var(--line);border-radius:var(--r);padding:14px}
-.facecam-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+/* Draggable Gameplay Framing Area */
+.framing-container{margin-top:16px;background:var(--field);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.framing-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .presets-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .src-monitor{
   position:relative;
@@ -318,7 +288,7 @@ main{
   gap:4px;
 }
 
-/* Feature 3: Draggable 9:16 Shorts Crop Frame */
+/* Draggable 9:16 Shorts Crop Frame on Stream */
 .shorts-frame{
   position:absolute;
   top:0;
@@ -379,41 +349,6 @@ main{
 }
 .frame-sub{font-size:9px;color:#d1fae5;font-weight:500}
 
-/* Facecam Box */
-.face-box{
-  position:absolute;
-  border:2px solid #3b82f6;
-  background:rgba(59,130,246,0.25);
-  box-shadow:0 0 0 1px rgba(0,0,0,0.6);
-  cursor:move;
-  touch-action:none;
-  z-index:12;
-}
-.face-badge{
-  position:absolute;
-  top:2px;
-  left:2px;
-  background:#1e3a8a;
-  color:#93c5fd;
-  font-size:10px;
-  font-weight:600;
-  padding:1px 5px;
-  border-radius:2px;
-  pointer-events:none;
-  white-space:nowrap;
-}
-.face-handle{
-  position:absolute;
-  width:10px;
-  height:10px;
-  background:#fff;
-  border:2px solid #3b82f6;
-  border-radius:50%;
-  bottom:-5px;
-  right:-5px;
-  cursor:nwse-resize;
-}
-
 /* Phone Mockup */
 .preview-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
 .phone-backdrop{
@@ -445,7 +380,7 @@ main{
 .cap{text-align:center;color:#fff;font:400 20px Anton,Impact,sans-serif;paint-order:stroke fill;-webkit-text-stroke:4px #000;pointer-events:none}
 .cap u{text-decoration:none;color:#ffe600}
 
-/* Feature 4: Interactive Draggable Divider on Phone */
+/* Interactive Draggable Divider on Phone */
 .phone-divider{
   position:absolute;
   left:0;
@@ -507,7 +442,7 @@ main{
 .stat-label{font-size:11px;color:var(--mut)}
 .stat-val{font-size:16px;font-weight:700}
 
-/* Feature 1: Selected Clips Queue in Step 4 */
+/* Selected Clips Queue in Step 4 */
 .queue-section{margin-bottom:20px}
 .queue-cards{display:flex;flex-direction:column;gap:12px}
 .queue-card{
@@ -541,7 +476,7 @@ main{
 .qcard-info{flex:1}
 .qcard-title{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
 .qcard-hook{font-family:Anton,Impact,sans-serif;font-size:15px;color:#facc15;letter-spacing:0.5px}
-.qcard-meta{color:var(--mut);font-size:11px;display:flex;gap:8px;align-items:center;margin-top:4px}
+.qcard-meta{color:var(--mut);font-size:11px;display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap}
 .qcard-actions{display:flex;gap:8px;align-items:center}
 .qcard-result{
   border-top:1px solid var(--line);
@@ -551,6 +486,101 @@ main{
   justify-content:space-between;
   gap:14px;
   flex-wrap:wrap;
+}
+
+/* Facecam Source Framing in Edit Clip Modal */
+.mode-pills{display:flex;gap:8px}
+.mode-pill{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 12px;
+  border-radius:var(--r);
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--tx);
+  font-weight:600;
+  font-size:12px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+}
+.mode-pill:hover{border-color:var(--line-light);background:var(--panel3)}
+.mode-pill.active{border-color:var(--acc);background:#3b82f61a;color:#fff}
+
+.fc-framing-box-wrap{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.fc-monitor{
+  position:relative;
+  width:100%;
+  max-width:500px;
+  aspect-ratio:16/9;
+  background:#0a0b0d;
+  border:1px solid var(--line);
+  border-radius:6px;
+  overflow:hidden;
+  user-select:none;
+  margin:0 auto;
+}
+.fc-monitor-img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  pointer-events:none;
+}
+.fc-crop-box{
+  position:absolute;
+  border:2px dashed #f59e0b;
+  background:rgba(245, 158, 11, 0.22);
+  box-shadow:0 0 0 1px rgba(0,0,0,0.7), inset 0 0 14px rgba(245, 158, 11, 0.2);
+  cursor:move;
+  touch-action:none;
+  z-index:10;
+}
+.fc-crop-box.dragging{
+  border-color:#fbbf24;
+  background:rgba(245, 158, 11, 0.32);
+}
+.fc-crop-badge{
+  position:absolute;
+  top:4px;
+  left:4px;
+  background:#78350fdd;
+  border:1px solid #f59e0b;
+  border-radius:3px;
+  padding:2px 6px;
+  color:#fef3c7;
+  font-size:10px;
+  font-weight:700;
+  pointer-events:none;
+  user-select:none;
+  white-space:nowrap;
+  display:flex;
+  gap:4px;
+  align-items:center;
+}
+.fc-crop-sub{font-size:9px;color:#fde68a;font-weight:500}
+.fc-crop-handle{
+  position:absolute;
+  width:12px;
+  height:12px;
+  background:#fff;
+  border:2px solid #f59e0b;
+  border-radius:50%;
+  bottom:-6px;
+  right:-6px;
+  cursor:nwse-resize;
+  box-shadow:0 1px 4px rgba(0,0,0,0.6);
 }
 
 /* Live Terminal Log */
@@ -592,7 +622,7 @@ main{
   border-top:1px solid var(--line);
 }
 
-/* Advanced Settings Modal / Drawer */
+/* Modal Overlay */
 .modal-overlay{
   position:fixed;
   inset:0;
@@ -611,7 +641,7 @@ main{
   border-radius:var(--r-lg);
   max-width:680px;
   width:100%;
-  max-height:85vh;
+  max-height:90vh;
   display:flex;
   flex-direction:column;
   box-shadow:var(--shadow);
@@ -676,7 +706,7 @@ main{
       <span class="step-num">2</span> Select Clips
     </button>
     <button class="step-tab" data-step="3">
-      <span class="step-num">3</span> Style & Facecam
+      <span class="step-num">3</span> Style & Framing
     </button>
     <button class="step-tab" data-step="4">
       <span class="step-num">4</span> Render & Export
@@ -757,19 +787,19 @@ main{
       <div class="wizard-nav">
         <button class="btn" id="nav-step2-back">← Back to Source</button>
         <span style="color:var(--mut);font-size:12px" id="selected-count-label">0 clips selected</span>
-        <button class="btn p" id="nav-step2-next">Next: Style & Facecam →</button>
+        <button class="btn p" id="nav-step2-next">Next: Style & Framing →</button>
       </div>
     </div>
   </section>
 
-  <!-- STEP 3: Choose Style & Facecam -->
+  <!-- STEP 3: Style & Gameplay Framing (Clean, no facecam clutter) -->
   <section class="wizard-step" id="step-3">
     <div class="card">
-      <h2 class="card-title">3. Style & Facecam Alignment</h2>
-      <p class="card-desc">Choose vertical layout format, position your facecam, and adjust 9:16 crop framing.</p>
+      <h2 class="card-title">3. Style & Gameplay Framing</h2>
+      <p class="card-desc">Choose vertical layout format, position 9:16 crop framing over gameplay, and tweak colors & split ratio.</p>
 
       <div class="style-grid">
-        <!-- Left: Style Choice and Alignment -->
+        <!-- Left: Style Choice and Framing -->
         <div>
           <label style="font-weight:600;display:block;margin-bottom:8px">Layout Format</label>
           <div class="layout-cards">
@@ -783,63 +813,21 @@ main{
             </div>
           </div>
 
-          <!-- Feature 2: Facecam Mode Selector (Crop vs Separate File) -->
-          <div style="background:var(--field);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:16px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-              <span style="font-weight:600">📹 Facecam Source Mode</span>
-              <span style="font-size:11px;color:var(--acc);font-weight:600" id="fc-mode-status">Crop From Stream Video</span>
-            </div>
-            <div class="mode-pills">
-              <button type="button" class="mode-pill active" id="btn-fc-mode-crop">
-                🔲 Crop from Stream Recording
-              </button>
-              <button type="button" class="mode-pill" id="btn-fc-mode-separate">
-                📹 Upload Separate Facecam Video
-              </button>
-            </div>
-
-            <!-- Panel for Separate Facecam Video -->
-            <div id="fc-separate-panel" style="display:none;background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:12px">
-              <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Global Facecam Video File:</label>
-              <div style="display:flex;gap:8px;align-items:center">
-                <select id="fc-global-select" style="flex:1;padding:7px 10px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff"></select>
-                <input type="file" id="fc-file-input" accept="video/*" style="display:none">
-                <button type="button" class="btn sm p" onclick="$('#fc-file-input').click()">+ Upload Video</button>
-              </div>
-              <div class="video-badge" id="fc-global-badge" style="display:none;margin-top:10px;padding:8px 12px">
-                <span class="video-badge-icon">📹</span>
-                <div class="video-meta">
-                  <div class="video-name" id="fc-badge-name" style="font-size:12px">No file selected</div>
-                  <div class="video-detail" style="font-size:11px">Used as facecam for rendered shorts</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Feature 3: Draggable 9:16 Frame + Facecam Box on Source Monitor -->
-          <div class="facecam-container">
-            <div class="facecam-header">
-              <span style="font-weight:600">🎯 Source Framing & Facecam Positioning</span>
+          <!-- Gameplay 9:16 Shorts Framing Area -->
+          <div class="framing-container">
+            <div class="framing-header">
+              <span style="font-weight:600">🎯 Source Gameplay Framing (9:16 Shorts Window)</span>
               <div class="presets-bar">
-                <span style="font-size:11px;color:var(--mut)">9:16 Shorts Framing:</span>
+                <span style="font-size:11px;color:var(--mut)">Presets:</span>
                 <button class="btn sm" id="btn-shorts-left">◀ Left</button>
                 <button class="btn sm" id="btn-shorts-center">⯀ Center</button>
                 <button class="btn sm" id="btn-shorts-right">▶ Right</button>
               </div>
             </div>
             
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-              <span style="color:var(--mut);font-size:12px">
-                Drag the <b style="color:#34d399">green 9:16 frame</b> left/right for shorts crop. Drag the <b style="color:#60a5fa">blue box</b> over your facecam.
-              </span>
-              <div class="presets-bar">
-                <span style="font-size:11px;color:var(--mut)">Facecam Presets:</span>
-                <button class="btn sm" id="preset-tr">↗ TR</button>
-                <button class="btn sm" id="preset-tl">↖ TL</button>
-                <button class="btn sm" id="preset-br">↘ BR</button>
-                <button class="btn sm" id="preset-bl">↙ BL</button>
-              </div>
-            </div>
+            <p style="color:var(--mut);font-size:12px;margin:0 0 10px">
+              Drag the <b style="color:#34d399">green 9:16 frame</b> left or right across your 16:9 stream to choose which section appears in the vertical short.
+            </p>
             
             <div class="src-monitor" id="src-monitor">
               <img id="src-frame-img" class="src-bg-img" alt="Source frame">
@@ -847,7 +835,7 @@ main{
                 <span>📹 Source Frame Loading...</span>
               </div>
 
-              <!-- Feature 3: Draggable 9:16 Shorts Crop Frame -->
+              <!-- Draggable 9:16 Shorts Crop Frame -->
               <div class="shorts-frame" id="shorts-frame">
                 <div class="frame-arrow left" title="Drag left">◀</div>
                 <div class="frame-center-badge">
@@ -855,12 +843,6 @@ main{
                   <span class="frame-sub" id="shorts-frame-sub">Center (Auto)</span>
                 </div>
                 <div class="frame-arrow right" title="Drag right">▶</div>
-              </div>
-
-              <!-- Draggable & Resizable Facecam Area -->
-              <div class="face-box" id="face-box">
-                <span class="face-badge" id="face-badge">Facecam</span>
-                <div class="face-handle" id="face-handle" title="Drag to resize"></div>
               </div>
             </div>
           </div>
@@ -891,7 +873,7 @@ main{
           </div>
         </div>
 
-        <!-- Right: Real-time Live Phone Mockup Preview with Feature 4: Draggable Divider -->
+        <!-- Right: Real-time Live Phone Mockup Preview with Draggable Divider -->
         <div class="preview-wrap">
           <label style="font-weight:600;display:block">Live 9:16 Preview</label>
           <div class="phone-backdrop">
@@ -914,7 +896,7 @@ main{
   <section class="wizard-step" id="step-4">
     <div class="card">
       <h2 class="card-title">4. Render & Export Shorts</h2>
-      <p class="card-desc">Review your queue. You can render or edit any specific clip individually, or export all selected shorts at once.</p>
+      <p class="card-desc">Review your queue. You can add clip-specific facecams with visual source framing, render any clip individually, or export the full batch.</p>
 
       <div class="render-summary">
         <div class="render-details">
@@ -927,10 +909,6 @@ main{
             <span class="stat-val" id="summary-layout">Split Screen (B)</span>
           </div>
           <div class="render-stat">
-            <span class="stat-label">Facecam Mode</span>
-            <span class="stat-val" id="summary-facecam">Stream Crop</span>
-          </div>
-          <div class="render-stat">
             <span class="stat-label">Resolution</span>
             <span class="stat-val">1080 × 1920 (60fps)</span>
           </div>
@@ -940,12 +918,12 @@ main{
         </button>
       </div>
 
-      <!-- Feature 1: Clips Queue & Single Clip Export -->
+      <!-- Clips Queue & Single Clip Export -->
       <div class="queue-section" id="queue-section">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div>
             <h3 style="font-size:14px;font-weight:600;margin:0">🎬 Selected Clips Queue</h3>
-            <span style="font-size:12px;color:var(--mut)">Render or edit any single clip below with a single click</span>
+            <span style="font-size:12px;color:var(--mut)">Configure clip-specific facecam framing or render individual shorts</span>
           </div>
           <span style="font-size:12px;color:var(--acc);font-weight:600" id="queue-count-sub">0 clips ready</span>
         </div>
@@ -976,14 +954,15 @@ main{
 
 </main>
 
-<!-- Single Clip Edit Modal (Feature 1 & Feature 2) -->
+<!-- Edit Clip & Clip-Specific Facecam Framing Modal -->
 <div class="modal-overlay" id="clip-edit-modal">
-  <div class="modal-content" style="max-width:540px">
+  <div class="modal-content" style="max-width:620px">
     <div class="modal-header">
-      <h2 style="margin:0;font-size:15px;font-weight:600" id="clip-edit-title">✏️ Edit Clip</h2>
+      <h2 style="margin:0;font-size:15px;font-weight:600" id="clip-edit-title">✏️ Edit Clip & Facecam</h2>
       <button class="btn sm" id="btn-clip-edit-close">✕</button>
     </div>
-    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:16px">
+      <!-- Section 1: Clip Metadata & Hook -->
       <div>
         <label style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Clip File & Duration</label>
         <div style="font-weight:600;font-size:13px" id="edit-clip-file-info">clip_01.mp4</div>
@@ -1000,22 +979,75 @@ main{
             <option value="A">Layout A (Blurred Background)</option>
           </select>
         </div>
-        <div>
-          <label for="edit-clip-facecam" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Facecam Video Source</label>
-          <select id="edit-clip-facecam" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
-            <option value="">Default (Global Setup)</option>
-            <option value="__crop__">Force Crop from Stream</option>
-          </select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label for="edit-clip-start" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Start (s)</label>
+            <input type="number" step="0.1" id="edit-clip-start" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
+          </div>
+          <div>
+            <label for="edit-clip-end" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">End (s)</label>
+            <input type="number" step="0.1" id="edit-clip-end" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
+          </div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div>
-          <label for="edit-clip-start" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">Start (Seconds)</label>
-          <input type="number" step="0.1" id="edit-clip-start" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
+
+      <!-- Section 2: Clip-Specific Facecam Video & Real Image Source Framing -->
+      <div style="background:var(--field);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <label style="font-weight:600;font-size:13px;margin:0">📹 Clip-Specific Facecam Video</label>
+          <span style="font-size:11px;color:var(--mut)" id="modal-fc-status">No Facecam Active</span>
         </div>
-        <div>
-          <label for="edit-clip-end" style="font-size:12px;color:var(--mut);display:block;margin-bottom:4px">End (Seconds)</label>
-          <input type="number" step="0.1" id="edit-clip-end" style="width:100%;padding:8px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:#fff">
+
+        <div class="mode-pills">
+          <button type="button" class="mode-pill active" id="modal-btn-fc-none">🚫 No Facecam (Gameplay Only)</button>
+          <button type="button" class="mode-pill" id="modal-btn-fc-enable">📹 Add Facecam Video</button>
+        </div>
+
+        <!-- Facecam Selector & Source Framing Panel -->
+        <div id="modal-fc-details" style="display:none;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="modal-fc-select" style="flex:1;padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:#fff;font-size:12px"></select>
+            <input type="file" id="modal-fc-file-input" accept="video/*" style="display:none">
+            <button type="button" class="btn sm p" onclick="$('#modal-fc-file-input').click()">+ Upload Video</button>
+          </div>
+
+          <!-- Real Image of Uploaded Facecam & Framing System -->
+          <div class="fc-framing-box-wrap" id="modal-fc-monitor-wrap" style="display:none">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+              <span style="font-size:12px;font-weight:600">🎯 Facecam Source Framing</span>
+              <div class="presets-bar">
+                <span style="font-size:10px;color:var(--mut)">Framing Presets:</span>
+                <button type="button" class="btn sm" id="modal-fc-preset-left">◀ Left</button>
+                <button type="button" class="btn sm" id="modal-fc-preset-center">⯀ Center</button>
+                <button type="button" class="btn sm" id="modal-fc-preset-right">▶ Right</button>
+                <button type="button" class="btn sm" id="modal-fc-preset-face">👤 Face Crop</button>
+                <button type="button" class="btn sm" id="modal-fc-preset-wide">↔ Wide</button>
+              </div>
+            </div>
+            <p style="font-size:11px;color:var(--mut);margin:0 0 8px">
+              Drag the <b style="color:#f59e0b">gold framing box</b> over the streamer's face. Drag the bottom-right corner circle to resize.
+            </p>
+
+            <div class="fc-monitor" id="modal-fc-monitor">
+              <img id="modal-fc-frame-img" class="fc-monitor-img" alt="Facecam Real Frame">
+              <div class="src-placeholder" id="modal-fc-placeholder">
+                <span>📹 Loading real facecam frame...</span>
+              </div>
+              <!-- Interactive Draggable & Resizable Facecam Framing Box -->
+              <div class="fc-crop-box" id="modal-fc-crop-box">
+                <div class="fc-crop-badge">
+                  <span>🎯 FACECAM CROP</span>
+                  <span class="fc-crop-sub" id="modal-fc-crop-sub">Framed</span>
+                </div>
+                <div class="fc-crop-handle" id="modal-fc-crop-handle" title="Drag to resize framing"></div>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:var(--mut)">
+              <span id="modal-fc-coords-text">Crop: Center</span>
+              <span id="modal-fc-res-text">Source: Loading...</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1062,7 +1094,6 @@ main{
 
 const SCHEMA=[
  ['Source video',null,[['SRC_W','Width','number',1920],['SRC_H','Height','number',1080]]],
- ['Facecam in source',null,[['FACE_X','Left','number',1440],['FACE_Y','Top','number',0],['FACE_W','Width','number',480],['FACE_H','Height','number',270]]],
  ['Split screen','B',[['B_TOP_PCT','Facecam share','range',35,15,65,1,'%'],['B_DIV_PX','Divider','range',8,2,24,1,'px'],['B_DIV_COLOR','Divider colour','color','#ffd23f'],['B_FACE_FIT','Facecam fit','select','cover',['cover','contain']]]],
  ['Blurred background','A',[['A_PANEL_H','Gameplay height','range',1080,700,1920,10,'px'],['A_BLUR','Blur','range',10,2,30,1],['A_FACE_W','Facecam width','range',340,200,500,10,'px'],['A_FACE_RIGHT','Right gap','range',30,0,120,5,'px'],['A_FACE_BOTTOM','Bottom gap','range',70,0,300,5,'px']]],
  ['Crop alignment',null,[['B_MAIN_X','Layout B Gameplay Crop X','text','auto'],['A_MAIN_X','Layout A Gameplay Crop X','text','auto']]],
@@ -1079,10 +1110,15 @@ let availableInputs = [];
 let live = false;
 let currentStep = 1;
 let currentSource = 'input/sample.webm';
-let facecamMode = 'crop'; // 'crop' or 'separate'
-let globalFacecam = '';
 let activeEditingClipIdx = -1;
 let singleRenderOutputs = {};
+
+// Modal Facecam State
+let modalFcActive = false;
+let modalFcPath = '';
+let modalFcNaturalW = 1920;
+let modalFcNaturalH = 1080;
+let modalFcCropCoords = null; // {w, h, x, y}
 
 function log(m){
   const e=$('#log');
@@ -1118,7 +1154,6 @@ function goToStep(s){
   });
   if(s === 3){
     updateSourceFrame();
-    syncFaceBoxFromV();
     syncShortsFrameFromV();
     draw();
   }
@@ -1182,14 +1217,12 @@ function buildAdvancedSettings(){
           V[k] = +inp.value;
           o.textContent = inp.value + (u || '');
           syncQuickControls();
-          syncFaceBoxFromV();
           draw();
         };
       } else {
         inp.oninput = () => {
           V[k] = (t === 'number') ? +inp.value : inp.value;
           syncQuickControls();
-          syncFaceBoxFromV();
           syncShortsFrameFromV();
           draw();
         };
@@ -1264,19 +1297,18 @@ function setLayout(layout){
 $('#card-layout-b').onclick = () => setLayout('B');
 $('#card-layout-a').onclick = () => setLayout('A');
 
-/* Feature 4: Phone Preview Drawing & Draggable Divider */
+/* Phone Preview Drawing & Draggable Divider */
 function draw(){
   const k = 0.24, W = 1080 * k, H = 1920 * k, g = x => +V[x];
   let h = '';
   const firstSelected = picked()[0];
   const hookText = (firstSelected && firstSelected.hook) ? firstSelected.hook.toUpperCase() : 'BRO EJECTED AT LAST SECOND';
-  const facecamLabel = (facecamMode === 'separate' && globalFacecam) ? 'FACECAM VIDEO' : 'FACECAM';
 
   if(L === 'B'){
     const t = Math.round(H * g('B_TOP_PCT') / 100);
     const d = Math.max(8, g('B_DIV_PX') * k);
     h = `
-      <div class="face" style="height:${t}px"><span>${facecamLabel}</span></div>
+      <div class="face" style="height:${t}px"><span>FACECAM</span></div>
       <div class="game" style="top:${t}px;height:${H-t}px"><span>GAMEPLAY</span></div>
       <div class="phone-divider" id="phone-divider" style="top:${t - d/2}px;height:${d}px;background:${V.B_DIV_COLOR || '#ffd23f'}">
         <div class="divider-pill">
@@ -1287,12 +1319,12 @@ function draw(){
       <b class="meme" style="top:${t + (H-t) * g('MEME_Y_PCT') / 100}px;font-size:${g('MEME_SIZE')*k}px;-webkit-text-stroke:${g('MEME_BORDER')*k*1.6}px #000">${hookText}</b>
     `;
   } else {
-    const p = g('A_PANEL_H') * k, fw = g('A_FACE_W') * k, fh = fw * g('FACE_H') / (g('FACE_W') || 1);
+    const p = g('A_PANEL_H') * k, fw = g('A_FACE_W') * k, fh = fw * 3 / 4;
     h = `
       <div class="bgb"></div>
       <div class="game" style="top:${(H-p)/2}px;height:${p}px"><span>GAMEPLAY</span></div>
       <div class="mini" style="width:${fw}px;height:${fh}px;right:${g('A_FACE_RIGHT')*k}px;bottom:${g('A_FACE_BOTTOM')*k}px;left:auto">
-        <span>${facecamLabel}</span>
+        <span>FACECAM</span>
       </div>
       <b class="cap" style="bottom:${560*k}px;-webkit-text-stroke-width:${7*k*1.6}px">he <u style="color:${V.CAP_HL}">climbed</u> on</b>
     `;
@@ -1300,7 +1332,7 @@ function draw(){
   $('#phone').innerHTML = h;
 }
 
-/* Feature 4: Drag Divider on Live Phone Preview */
+/* Drag Divider on Live Phone Preview */
 let isDraggingDivider = false;
 const phoneEl = $('#phone');
 
@@ -1331,13 +1363,10 @@ window.addEventListener('pointerup', () => {
   }
 });
 
-/* Feature 3: Draggable 9:16 Shorts Framing on 16:9 Monitor */
+/* Draggable 9:16 Shorts Framing on 16:9 Stream Monitor (Step 3) */
 const monitor = $('#src-monitor');
 const shortsFrame = $('#shorts-frame');
 const shortsFrameSub = $('#shorts-frame-sub');
-const faceBox = $('#face-box');
-const faceBadge = $('#face-badge');
-const faceHandle = $('#face-handle');
 const frameImg = $('#src-frame-img');
 
 function updateSourceFrame(){
@@ -1349,7 +1378,6 @@ function updateSourceFrame(){
       V.SRC_W = frameImg.naturalWidth;
       V.SRC_H = frameImg.naturalHeight;
       syncInputs();
-      syncFaceBoxFromV();
       syncShortsFrameFromV();
     }
   };
@@ -1364,7 +1392,6 @@ function syncShortsFrameFromV(){
   const srcW = +V.SRC_W || 1920;
   const scaleX = mw / srcW;
 
-  // 9:16 aspect ratio width inside the 16:9 monitor
   const frameW = Math.round(mh * (9 / 16));
   shortsFrame.style.width = frameW + 'px';
 
@@ -1380,34 +1407,7 @@ function syncShortsFrameFromV(){
   }
 }
 
-function syncFaceBoxFromV(){
-  const mw = monitor.clientWidth || 540;
-  const mh = monitor.clientHeight || (mw * 9 / 16);
-  const srcW = +V.SRC_W || 1920;
-  const srcH = +V.SRC_H || 1080;
-  const scaleX = mw / srcW;
-  const scaleY = mh / srcH;
-
-  const bx = (+V.FACE_X || 0) * scaleX;
-  const by = (+V.FACE_Y || 0) * scaleY;
-  const bw = (+V.FACE_W || 480) * scaleX;
-  const bh = (+V.FACE_H || 270) * scaleY;
-
-  faceBox.style.left = Math.round(bx) + 'px';
-  faceBox.style.top = Math.round(by) + 'px';
-  faceBox.style.width = Math.round(bw) + 'px';
-  faceBox.style.height = Math.round(bh) + 'px';
-  faceBadge.textContent = `Facecam (${V.FACE_W}×${V.FACE_H})`;
-
-  if(facecamMode === 'separate'){
-    faceBox.style.opacity = '0.35';
-    faceBadge.textContent = 'Separate File Active';
-  } else {
-    faceBox.style.opacity = '1';
-  }
-}
-
-// Drag logic for 9:16 Shorts Frame
+// Drag logic for 9:16 Shorts Frame in Step 3
 let isDraggingShortsFrame = false;
 let sfStartX = 0, sfStartLeft = 0;
 
@@ -1419,40 +1419,12 @@ shortsFrame.addEventListener('pointerdown', e => {
   sfStartLeft = shortsFrame.offsetLeft;
 });
 
-// Drag & Resize logic for Facecam Box
-let isDraggingFace = false;
-let isResizingFace = false;
-let startX = 0, startY = 0, startLeft = 0, startTop = 0, startWidth = 0, startHeight = 0;
-
-faceBox.addEventListener('pointerdown', e => {
-  if(e.target === faceHandle) return;
-  isDraggingFace = true;
-  faceBox.setPointerCapture(e.pointerId);
-  startX = e.clientX;
-  startY = e.clientY;
-  startLeft = faceBox.offsetLeft;
-  startTop = faceBox.offsetTop;
-});
-
-faceHandle.addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  isResizingFace = true;
-  faceHandle.setPointerCapture(e.pointerId);
-  startX = e.clientX;
-  startY = e.clientY;
-  startWidth = faceBox.offsetWidth;
-  startHeight = faceBox.offsetHeight;
-});
-
 window.addEventListener('pointermove', e => {
-  const mw = monitor.clientWidth || 540;
-  const mh = monitor.clientHeight || 303;
-  const srcW = +V.SRC_W || 1920;
-  const srcH = +V.SRC_H || 1080;
-  const scaleX = mw / srcW;
-  const scaleY = mh / srcH;
-
   if(isDraggingShortsFrame){
+    const mw = monitor.clientWidth || 540;
+    const srcW = +V.SRC_W || 1920;
+    const scaleX = mw / srcW;
+
     let newLeft = sfStartLeft + (e.clientX - sfStartX);
     const frameW = shortsFrame.offsetWidth;
     newLeft = Math.max(0, Math.min(mw - frameW, newLeft));
@@ -1470,34 +1442,6 @@ window.addEventListener('pointermove', e => {
       shortsFrameSub.textContent = srcX + 'px';
     }
     syncInputs();
-  } else if(isDraggingFace){
-    let newLeft = startLeft + (e.clientX - startX);
-    let newTop = startTop + (e.clientY - startY);
-    newLeft = Math.max(0, Math.min(mw - faceBox.offsetWidth, newLeft));
-    newTop = Math.max(0, Math.min(mh - faceBox.offsetHeight, newTop));
-
-    faceBox.style.left = newLeft + 'px';
-    faceBox.style.top = newTop + 'px';
-
-    V.FACE_X = Math.round(newLeft / scaleX);
-    V.FACE_Y = Math.round(newTop / scaleY);
-    faceBadge.textContent = `Facecam (${V.FACE_W}×${V.FACE_H})`;
-    syncInputs();
-    draw();
-  } else if(isResizingFace){
-    let newW = startWidth + (e.clientX - startX);
-    let newH = startHeight + (e.clientY - startY);
-    newW = Math.max(30, Math.min(mw - faceBox.offsetLeft, newW));
-    newH = Math.max(20, Math.min(mh - faceBox.offsetTop, newH));
-
-    faceBox.style.width = newW + 'px';
-    faceBox.style.height = newH + 'px';
-
-    V.FACE_W = Math.round(newW / scaleX);
-    V.FACE_H = Math.round(newH / scaleY);
-    faceBadge.textContent = `Facecam (${V.FACE_W}×${V.FACE_H})`;
-    syncInputs();
-    draw();
   }
 });
 
@@ -1505,11 +1449,6 @@ window.addEventListener('pointerup', () => {
   if(isDraggingShortsFrame){
     isDraggingShortsFrame = false;
     shortsFrame.classList.remove('dragging');
-    saveCurrentConfig();
-  }
-  if(isDraggingFace || isResizingFace){
-    isDraggingFace = false;
-    isResizingFace = false;
     saveCurrentConfig();
   }
 });
@@ -1534,128 +1473,23 @@ $('#btn-shorts-right').onclick = () => {
   syncInputs(); syncShortsFrameFromV(); saveCurrentConfig();
 };
 
-/* Presets for Facecam Box */
-$('#preset-tr').onclick = () => {
-  V.FACE_W = Math.round(V.SRC_W * 0.25);
-  V.FACE_H = Math.round(V.SRC_H * 0.25);
-  V.FACE_X = V.SRC_W - V.FACE_W;
-  V.FACE_Y = 0;
-  syncInputs(); syncFaceBoxFromV(); draw(); saveCurrentConfig();
-};
-$('#preset-tl').onclick = () => {
-  V.FACE_W = Math.round(V.SRC_W * 0.25);
-  V.FACE_H = Math.round(V.SRC_H * 0.25);
-  V.FACE_X = 0;
-  V.FACE_Y = 0;
-  syncInputs(); syncFaceBoxFromV(); draw(); saveCurrentConfig();
-};
-$('#preset-br').onclick = () => {
-  V.FACE_W = Math.round(V.SRC_W * 0.25);
-  V.FACE_H = Math.round(V.SRC_H * 0.25);
-  V.FACE_X = V.SRC_W - V.FACE_W;
-  V.FACE_Y = V.SRC_H - V.FACE_H;
-  syncInputs(); syncFaceBoxFromV(); draw(); saveCurrentConfig();
-};
-$('#preset-bl').onclick = () => {
-  V.FACE_W = Math.round(V.SRC_W * 0.25);
-  V.FACE_H = Math.round(V.SRC_H * 0.25);
-  V.FACE_X = 0;
-  V.FACE_Y = V.SRC_H - V.FACE_H;
-  syncInputs(); syncFaceBoxFromV(); draw(); saveCurrentConfig();
-};
-
-/* Feature 2: Facecam Mode Switcher (Crop vs Separate File) */
-$('#btn-fc-mode-crop').onclick = () => {
-  setFacecamMode('crop');
-};
-$('#btn-fc-mode-separate').onclick = () => {
-  setFacecamMode('separate');
-};
-
-function setFacecamMode(mode){
-  facecamMode = mode;
-  $('#btn-fc-mode-crop').classList.toggle('active', mode === 'crop');
-  $('#btn-fc-mode-separate').classList.toggle('active', mode === 'separate');
-  $('#fc-separate-panel').style.display = (mode === 'separate') ? 'block' : 'none';
-  $('#fc-mode-status').textContent = (mode === 'separate') ? 'Separate Webcam Video' : 'Crop From Stream Video';
-  syncFaceBoxFromV();
-  draw();
-  updateSummary();
-  renderStep4Queue();
-}
-
-$('#fc-global-select').onchange = () => {
-  globalFacecam = $('#fc-global-select').value;
-  updateFacecamBadge();
-  draw();
-  updateSummary();
-  renderStep4Queue();
-};
-
-$('#fc-file-input').onchange = async e => {
-  if(e.target.files && e.target.files[0]){
-    await handleFacecamUpload(e.target.files[0]);
-  }
-};
-
-async function handleFacecamUpload(file){
-  log('> Uploading facecam video: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)...');
-  const fd = new FormData();
-  fd.append('file', file);
-  try{
-    const res = await fetch('/api/upload', {method:'POST', body:fd});
-    const data = await res.json();
-    if(data.ok){
-      log('✓ Facecam video uploaded: ' + data.path);
-      await loadSourceInputs();
-      globalFacecam = data.path;
-      $('#fc-global-select').value = data.path;
-      updateFacecamBadge();
-      draw();
-      updateSummary();
-      renderStep4Queue();
-    }
-  }catch(e){ log('Facecam upload failed: ' + e.message); }
-}
-
-function updateFacecamBadge(){
-  const badge = $('#fc-global-badge');
-  if(globalFacecam){
-    badge.style.display = 'flex';
-    $('#fc-badge-name').textContent = globalFacecam;
-  } else {
-    badge.style.display = 'none';
-  }
-}
-
 /* Source Selection & File Upload */
 async function loadSourceInputs(){
   try{
     availableInputs = await api('/api/inputs');
     const sel = $('#source-select');
-    const fcSel = $('#fc-global-select');
     sel.innerHTML = '';
-    fcSel.innerHTML = '<option value="">-- Select Video File --</option>';
 
     if(!availableInputs.length){
       sel.add(new Option('input/sample.webm', 'input/sample.webm'));
     } else {
       availableInputs.forEach(item => {
         sel.add(new Option(`${item.name} (${item.size_mb} MB)`, item.path));
-        fcSel.add(new Option(`${item.name} (${item.size_mb} MB)`, item.path));
       });
     }
 
     currentSource = sel.value;
-    if(availableInputs.some(x => x.name.toLowerCase().includes('cam') || x.name.toLowerCase().includes('face'))){
-      const match = availableInputs.find(x => x.name.toLowerCase().includes('cam') || x.name.toLowerCase().includes('face'));
-      if(match && !globalFacecam){
-        globalFacecam = match.path;
-        fcSel.value = match.path;
-      }
-    }
     updateSourceBadge();
-    updateFacecamBadge();
     updateSourceFrame();
   }catch(e){
     currentSource = 'input/sample.webm';
@@ -1719,15 +1553,6 @@ function renderClips(){
   container.innerHTML = clips.map((c, i) => {
     const isSelected = c.selected !== false;
     const duration = ((+c.end_sec) - (+c.start_sec)).toFixed(1);
-    const clipFc = c.facecam || '';
-
-    let fcOptions = `
-      <option value="" ${clipFc===''?'selected':''}>Default (Global Setup)</option>
-      <option value="__crop__" ${clipFc==='__crop__'?'selected':''}>Crop Stream Recording</option>
-    `;
-    availableInputs.forEach(inp => {
-      fcOptions += `<option value="${inp.path}" ${clipFc===inp.path?'selected':''}>${inp.name}</option>`;
-    });
 
     return `
       <div class="clip-card ${isSelected ? 'selected' : ''}" id="card-clip-${i}">
@@ -1750,10 +1575,6 @@ function renderClips(){
           </div>
           <input type="text" class="clip-hook-input" data-h="${i}" value="${(c.hook_en || '').replace(/"/g, '&quot;')}" placeholder="e.g. BRO EJECTED AT LAST SECOND">
         </div>
-        <div class="clip-fc-row">
-          <span style="color:var(--mut)">Facecam:</span>
-          <select class="clip-fc-select" data-fc="${i}">${fcOptions}</select>
-        </div>
       </div>
     `;
   }).join('');
@@ -1772,12 +1593,6 @@ function renderClips(){
       const idx = +e.target.dataset.h;
       clips[idx].hook_en = e.target.value;
       draw();
-    };
-  });
-  document.querySelectorAll('.clip-fc-select').forEach(sel => {
-    sel.onchange = e => {
-      const idx = +e.target.dataset.fc;
-      clips[idx].facecam = e.target.value;
     };
   });
   updateSelectedCount();
@@ -1811,12 +1626,13 @@ $('#btn-deselect-all').onclick = () => {
 
 function picked(){
   return clips.filter(c => c.selected !== false).map(c => {
-    const fcVal = c.facecam !== undefined && c.facecam !== '' ? c.facecam : (facecamMode === 'separate' ? globalFacecam : '');
     return {
       file: c.file,
       hook: c.hook_en || '',
       layout: c.layout || L,
-      facecam: fcVal === '__crop__' ? '' : fcVal,
+      facecam: c.facecam || '',
+      facecam_crop: c.facecam_crop || '',
+      fc_crop_coords: c.fc_crop_coords || null,
       start_sec: c.start_sec,
       end_sec: c.end_sec,
       event_type: c.event_type
@@ -1837,7 +1653,7 @@ async function loadClips(){
   renderClips();
 }
 
-/* Feature 1: Step 4 Clips Queue & Single Render / Edit */
+/* Step 4: Clips Queue & Single Render / Edit */
 function renderStep4Queue(){
   const container = $('#step4-queue-cards');
   const selectedClips = picked();
@@ -1851,8 +1667,16 @@ function renderStep4Queue(){
   container.innerHTML = selectedClips.map((c, i) => {
     const originalIdx = clips.findIndex(x => x.file === c.file);
     const duration = ((+c.end_sec) - (+c.start_sec)).toFixed(1);
-    const fcDisplay = c.facecam ? c.facecam.split('/').pop() : 'Stream Crop';
     const existingOutput = singleRenderOutputs[c.file];
+
+    let fcBadgeHtml = '';
+    if(c.facecam){
+      const fcFilename = c.facecam.split('/').pop();
+      const cropText = c.facecam_crop ? ` [Crop: ${c.facecam_crop}]` : ' [Framed]';
+      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📹 Facecam: ${fcFilename}${cropText}</span>`;
+    } else {
+      fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">📹 No Facecam (Stream Only)</span>`;
+    }
 
     let resultHtml = '';
     if(existingOutput){
@@ -1877,21 +1701,20 @@ function renderStep4Queue(){
                 <span>${c.file}</span>
                 <span class="clip-tag">${c.event_type || 'highlight'}</span>
                 <span class="clip-tag" style="background:#1e3a8a;color:#93c5fd">Layout ${c.layout}</span>
+                ${fcBadgeHtml}
               </div>
               <div class="qcard-hook">“${c.hook || 'NO HOOK TEXT'}”</div>
               <div class="qcard-meta">
                 <span>⏱ ${(+c.start_sec).toFixed(1)}s – ${(+c.end_sec).toFixed(1)}s (${duration}s)</span>
-                <span>•</span>
-                <span>📹 Facecam: <b>${fcDisplay}</b></span>
               </div>
             </div>
           </div>
           <div class="qcard-actions">
             <button class="btn sm p" id="btn-render-single-${originalIdx}" onclick="renderSingleClip(${originalIdx})">
-              🎬 Render This Clip
+              🎬 Render Clip
             </button>
             <button class="btn sm" onclick="openEditClipModal(${originalIdx})">
-              ✏️ Edit Clip
+              ✏️ Edit Clip & Facecam
             </button>
           </div>
         </div>
@@ -1904,12 +1727,12 @@ function renderStep4Queue(){
 async function renderSingleClip(idx){
   const c = clips[idx];
   if(!c) return;
-  const fcVal = c.facecam !== undefined && c.facecam !== '' ? c.facecam : (facecamMode === 'separate' ? globalFacecam : '');
   const clipPayload = {
     file: c.file,
     hook: c.hook_en || '',
     layout: c.layout || L,
-    facecam: fcVal === '__crop__' ? '' : fcVal,
+    facecam: c.facecam || '',
+    facecam_crop: c.facecam_crop || '',
     start_sec: c.start_sec,
     end_sec: c.end_sec
   };
@@ -1925,7 +1748,6 @@ async function renderSingleClip(idx){
   if(btn){ btn.disabled = false; btn.textContent = '🎬 Re-render Clip'; }
   if(card) card.classList.remove('rendering');
 
-  // Check output
   const stem = c.file.replace(/\.[^/.]+$/, '');
   const outPath = `out/${stem}_${clipPayload.layout}.mp4`;
   singleRenderOutputs[c.file] = outPath;
@@ -1945,43 +1767,317 @@ async function renderSingleClip(idx){
   }
 }
 
-/* Feature 1: Single Clip Edit Modal */
+/* Edit Clip & Real Facecam Source Framing Modal */
 function openEditClipModal(idx){
   activeEditingClipIdx = idx;
   const c = clips[idx];
   if(!c) return;
 
-  $('#clip-edit-title').textContent = `✏️ Edit Clip: ${c.file}`;
+  $('#clip-edit-title').textContent = `✏️ Edit Clip & Facecam: ${c.file}`;
   $('#edit-clip-file-info').textContent = `${c.file} — ${(+c.start_sec).toFixed(1)}s to ${(+c.end_sec).toFixed(1)}s`;
   $('#edit-clip-hook').value = c.hook_en || '';
   $('#edit-clip-layout').value = c.layout || L;
   $('#edit-clip-start').value = (+c.start_sec).toFixed(1);
   $('#edit-clip-end').value = (+c.end_sec).toFixed(1);
 
-  const fcSel = $('#edit-clip-facecam');
-  fcSel.innerHTML = `
-    <option value="">Default (Global Setup)</option>
-    <option value="__crop__">Force Crop from Stream</option>
-  `;
+  // Populate facecam select dropdown
+  const fcSel = $('#modal-fc-select');
+  fcSel.innerHTML = '<option value="">-- Choose Facecam Video --</option>';
   availableInputs.forEach(inp => {
-    fcSel.add(new Option(inp.name, inp.path));
+    fcSel.add(new Option(`${inp.name} (${inp.size_mb} MB)`, inp.path));
   });
-  fcSel.value = c.facecam || '';
 
+  modalFcActive = !!c.facecam;
+  modalFcPath = c.facecam || '';
+  modalFcCropCoords = c.fc_crop_coords || null;
+
+  if(modalFcPath){
+    fcSel.value = modalFcPath;
+  } else if(availableInputs.length){
+    const match = availableInputs.find(x => x.name.toLowerCase().includes('cam') || x.name.toLowerCase().includes('face'));
+    if(match) fcSel.value = match.path;
+  }
+
+  updateModalFacecamView();
   $('#clip-edit-modal').classList.add('open');
 }
+
+function updateModalFacecamView(){
+  $('#modal-btn-fc-none').classList.toggle('active', !modalFcActive);
+  $('#modal-btn-fc-enable').classList.toggle('active', modalFcActive);
+  $('#modal-fc-details').style.display = modalFcActive ? 'flex' : 'none';
+
+  if(!modalFcActive){
+    $('#modal-fc-status').textContent = 'No Facecam (Stream Only)';
+    $('#modal-fc-monitor-wrap').style.display = 'none';
+  } else {
+    const selVal = $('#modal-fc-select').value;
+    if(selVal){
+      modalFcPath = selVal;
+      $('#modal-fc-status').textContent = 'Active: ' + modalFcPath.split('/').pop();
+      loadRealFacecamFrame(modalFcPath);
+    } else {
+      $('#modal-fc-status').textContent = 'Select or upload a video below';
+      $('#modal-fc-monitor-wrap').style.display = 'none';
+    }
+  }
+}
+
+$('#modal-btn-fc-none').onclick = () => {
+  modalFcActive = false;
+  modalFcPath = '';
+  updateModalFacecamView();
+};
+
+$('#modal-btn-fc-enable').onclick = () => {
+  modalFcActive = true;
+  updateModalFacecamView();
+};
+
+$('#modal-fc-select').onchange = () => {
+  modalFcPath = $('#modal-fc-select').value;
+  modalFcCropCoords = null; // reset to center for new video
+  updateModalFacecamView();
+};
+
+$('#modal-fc-file-input').onchange = async e => {
+  if(e.target.files && e.target.files[0]){
+    await handleModalFacecamUpload(e.target.files[0]);
+  }
+};
+
+async function handleModalFacecamUpload(file){
+  log('> Uploading facecam video for clip: ' + file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)...');
+  const fd = new FormData();
+  fd.append('file', file);
+  try{
+    const res = await fetch('/api/upload', {method:'POST', body:fd});
+    const data = await res.json();
+    if(data.ok){
+      log('✓ Facecam video uploaded: ' + data.path);
+      await loadSourceInputs();
+      
+      const fcSel = $('#modal-fc-select');
+      fcSel.innerHTML = '<option value="">-- Choose Facecam Video --</option>';
+      availableInputs.forEach(inp => {
+        fcSel.add(new Option(`${inp.name} (${inp.size_mb} MB)`, inp.path));
+      });
+      fcSel.value = data.path;
+      modalFcActive = true;
+      modalFcPath = data.path;
+      modalFcCropCoords = null;
+      updateModalFacecamView();
+    }
+  }catch(e){ log('Facecam upload failed: ' + e.message); }
+}
+
+/* Render Real Image of Uploaded Facecam & Framing Box */
+const fcMonitor = $('#modal-fc-monitor');
+const fcImg = $('#modal-fc-frame-img');
+const fcPlaceholder = $('#modal-fc-placeholder');
+const fcCropBox = $('#modal-fc-crop-box');
+const fcCropSub = $('#modal-fc-crop-sub');
+const fcCropHandle = $('#modal-fc-crop-handle');
+
+function loadRealFacecamFrame(videoPath){
+  $('#modal-fc-monitor-wrap').style.display = 'block';
+  fcPlaceholder.style.display = 'flex';
+  fcImg.style.display = 'none';
+
+  fcImg.src = '/api/frame?source=' + encodeURIComponent(videoPath) + '&t=' + Date.now();
+  fcImg.onload = () => {
+    fcPlaceholder.style.display = 'none';
+    fcImg.style.display = 'block';
+    modalFcNaturalW = fcImg.naturalWidth || 1920;
+    modalFcNaturalH = fcImg.naturalHeight || 1080;
+    $('#modal-fc-res-text').textContent = `Source: ${modalFcNaturalW}×${modalFcNaturalH}`;
+    initFacecamFramingBox();
+  };
+  fcImg.onerror = () => {
+    fcPlaceholder.style.display = 'flex';
+    fcPlaceholder.innerHTML = '<span>⚠️ Could not extract frame from video</span>';
+  };
+}
+
+function initFacecamFramingBox(){
+  const mw = fcMonitor.clientWidth || 480;
+  const mh = fcMonitor.clientHeight || (mw * 9 / 16);
+  const scaleX = mw / modalFcNaturalW;
+  const scaleY = mh / modalFcNaturalH;
+
+  if(modalFcCropCoords){
+    const bx = Math.round(modalFcCropCoords.x * scaleX);
+    const by = Math.round(modalFcCropCoords.y * scaleY);
+    const bw = Math.round(modalFcCropCoords.w * scaleX);
+    const bh = Math.round(modalFcCropCoords.h * scaleY);
+
+    fcCropBox.style.left = Math.max(0, Math.min(mw - bw, bx)) + 'px';
+    fcCropBox.style.top = Math.max(0, Math.min(mh - bh, by)) + 'px';
+    fcCropBox.style.width = bw + 'px';
+    fcCropBox.style.height = bh + 'px';
+  } else {
+    // Default: centered 4:3 / 16:10 framing box over the facecam
+    const defW = Math.round(modalFcNaturalH * 1.15);
+    const defH = Math.round(modalFcNaturalH * 0.88);
+    const defX = Math.round((modalFcNaturalW - defW) / 2);
+    const defY = Math.round((modalFcNaturalH - defH) / 2);
+
+    fcCropBox.style.left = Math.round(defX * scaleX) + 'px';
+    fcCropBox.style.top = Math.round(defY * scaleY) + 'px';
+    fcCropBox.style.width = Math.round(defW * scaleX) + 'px';
+    fcCropBox.style.height = Math.round(defH * scaleY) + 'px';
+  }
+  updateFacecamCropReadout();
+}
+
+function updateFacecamCropReadout(){
+  const mw = fcMonitor.clientWidth || 480;
+  const mh = fcMonitor.clientHeight || 270;
+  const scaleX = mw / modalFcNaturalW;
+  const scaleY = mh / modalFcNaturalH;
+
+  let srcX = Math.round(fcCropBox.offsetLeft / scaleX);
+  let srcY = Math.round(fcCropBox.offsetTop / scaleY);
+  let srcW = Math.round(fcCropBox.offsetWidth / scaleX);
+  let srcH = Math.round(fcCropBox.offsetHeight / scaleY);
+
+  // Even pixels for encoder
+  srcX = Math.max(0, srcX - (srcX % 2));
+  srcY = Math.max(0, srcY - (srcY % 2));
+  srcW = Math.max(80, Math.min(modalFcNaturalW - srcX, srcW - (srcW % 2)));
+  srcH = Math.max(80, Math.min(modalFcNaturalH - srcY, srcH - (srcH % 2)));
+
+  modalFcCropCoords = {w: srcW, h: srcH, x: srcX, y: srcY};
+  fcCropSub.textContent = `${srcW}×${srcH}`;
+  $('#modal-fc-coords-text').textContent = `Crop: ${srcW}×${srcH} at (${srcX}, ${srcY})`;
+}
+
+// Drag & Resize logic for Facecam Framing Box in Modal
+let isDraggingFcCrop = false;
+let isResizingFcCrop = false;
+let fcStartX = 0, fcStartY = 0, fcStartLeft = 0, fcStartTop = 0, fcStartW = 0, fcStartH = 0;
+
+fcCropBox.addEventListener('pointerdown', e => {
+  if(e.target === fcCropHandle) return;
+  isDraggingFcCrop = true;
+  fcCropBox.classList.add('dragging');
+  fcCropBox.setPointerCapture(e.pointerId);
+  fcStartX = e.clientX;
+  fcStartY = e.clientY;
+  fcStartLeft = fcCropBox.offsetLeft;
+  fcStartTop = fcCropBox.offsetTop;
+});
+
+fcCropHandle.addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  isResizingFcCrop = true;
+  fcCropHandle.setPointerCapture(e.pointerId);
+  fcStartX = e.clientX;
+  fcStartY = e.clientY;
+  fcStartW = fcCropBox.offsetWidth;
+  fcStartH = fcCropBox.offsetHeight;
+});
+
+window.addEventListener('pointermove', e => {
+  if(isDraggingFcCrop){
+    const mw = fcMonitor.clientWidth || 480;
+    const mh = fcMonitor.clientHeight || 270;
+    let newLeft = fcStartLeft + (e.clientX - fcStartX);
+    let newTop = fcStartTop + (e.clientY - fcStartY);
+    newLeft = Math.max(0, Math.min(mw - fcCropBox.offsetWidth, newLeft));
+    newTop = Math.max(0, Math.min(mh - fcCropBox.offsetHeight, newTop));
+
+    fcCropBox.style.left = newLeft + 'px';
+    fcCropBox.style.top = newTop + 'px';
+    updateFacecamCropReadout();
+  } else if(isResizingFcCrop){
+    const mw = fcMonitor.clientWidth || 480;
+    const mh = fcMonitor.clientHeight || 270;
+    let newW = fcStartW + (e.clientX - fcStartX);
+    let newH = fcStartH + (e.clientY - fcStartY);
+    newW = Math.max(40, Math.min(mw - fcCropBox.offsetLeft, newW));
+    newH = Math.max(40, Math.min(mh - fcCropBox.offsetTop, newH));
+
+    fcCropBox.style.width = newW + 'px';
+    fcCropBox.style.height = newH + 'px';
+    updateFacecamCropReadout();
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  if(isDraggingFcCrop){
+    isDraggingFcCrop = false;
+    fcCropBox.classList.remove('dragging');
+  }
+  if(isResizingFcCrop){
+    isResizingFcCrop = false;
+  }
+});
+
+// Facecam Framing Presets in Modal
+$('#modal-fc-preset-left').onclick = () => {
+  fcCropBox.style.left = '0px';
+  updateFacecamCropReadout();
+};
+$('#modal-fc-preset-center').onclick = () => {
+  const mw = fcMonitor.clientWidth || 480;
+  fcCropBox.style.left = Math.round((mw - fcCropBox.offsetWidth) / 2) + 'px';
+  updateFacecamCropReadout();
+};
+$('#modal-fc-preset-right').onclick = () => {
+  const mw = fcMonitor.clientWidth || 480;
+  fcCropBox.style.left = (mw - fcCropBox.offsetWidth) + 'px';
+  updateFacecamCropReadout();
+};
+$('#modal-fc-preset-face').onclick = () => {
+  const mh = fcMonitor.clientHeight || 270;
+  const mw = fcMonitor.clientWidth || 480;
+  const size = Math.round(mh * 0.85);
+  fcCropBox.style.width = size + 'px';
+  fcCropBox.style.height = size + 'px';
+  fcCropBox.style.left = Math.round((mw - size) / 2) + 'px';
+  fcCropBox.style.top = Math.round((mh - size) / 2) + 'px';
+  updateFacecamCropReadout();
+};
+$('#modal-fc-preset-wide').onclick = () => {
+  const mh = fcMonitor.clientHeight || 270;
+  const mw = fcMonitor.clientWidth || 480;
+  fcCropBox.style.width = Math.round(mw * 0.9) + 'px';
+  fcCropBox.style.height = Math.round(mh * 0.9) + 'px';
+  fcCropBox.style.left = Math.round(mw * 0.05) + 'px';
+  fcCropBox.style.top = Math.round(mh * 0.05) + 'px';
+  updateFacecamCropReadout();
+};
 
 $('#btn-clip-edit-close').onclick = () => $('#clip-edit-modal').classList.remove('open');
 $('#btn-clip-edit-cancel').onclick = () => $('#clip-edit-modal').classList.remove('open');
 
-$('#btn-clip-edit-save').onclick = async () => {
+function applyModalEditsToClip(){
   if(activeEditingClipIdx < 0 || !clips[activeEditingClipIdx]) return;
   const c = clips[activeEditingClipIdx];
   c.hook_en = $('#edit-clip-hook').value;
   c.layout = $('#edit-clip-layout').value;
-  c.facecam = $('#edit-clip-facecam').value;
   c.start_sec = +$('#edit-clip-start').value;
   c.end_sec = +$('#edit-clip-end').value;
+
+  if(modalFcActive && modalFcPath){
+    c.facecam = modalFcPath;
+    if(modalFcCropCoords){
+      c.fc_crop_coords = modalFcCropCoords;
+      c.facecam_crop = `${modalFcCropCoords.w}:${modalFcCropCoords.h}:${modalFcCropCoords.x}:${modalFcCropCoords.y}`;
+    } else {
+      c.facecam_crop = '';
+    }
+  } else {
+    c.facecam = '';
+    c.facecam_crop = '';
+    c.fc_crop_coords = null;
+  }
+}
+
+$('#btn-clip-edit-save').onclick = async () => {
+  applyModalEditsToClip();
+  const c = clips[activeEditingClipIdx];
 
   if(live){
     try{ await api('/api/clips', {method:'POST', body:JSON.stringify(clips)}); }catch{}
@@ -1995,14 +2091,8 @@ $('#btn-clip-edit-save').onclick = async () => {
 };
 
 $('#btn-clip-edit-render').onclick = async () => {
-  if(activeEditingClipIdx < 0 || !clips[activeEditingClipIdx]) return;
+  applyModalEditsToClip();
   const idx = activeEditingClipIdx;
-  const c = clips[idx];
-  c.hook_en = $('#edit-clip-hook').value;
-  c.layout = $('#edit-clip-layout').value;
-  c.facecam = $('#edit-clip-facecam').value;
-  c.start_sec = +$('#edit-clip-start').value;
-  c.end_sec = +$('#edit-clip-end').value;
 
   if(live){
     try{ await api('/api/clips', {method:'POST', body:JSON.stringify(clips)}); }catch{}
@@ -2049,7 +2139,6 @@ function updateSummary(){
   const p = picked();
   $('#summary-clips-count').textContent = p.length;
   $('#summary-layout').textContent = L === 'B' ? 'Split Screen (Layout B)' : 'Blurred Background (Layout A)';
-  $('#summary-facecam').textContent = (facecamMode === 'separate' && globalFacecam) ? globalFacecam.split('/').pop() : 'Stream Crop';
 }
 
 function displayRenderGallery(outputs){
@@ -2117,14 +2206,15 @@ async function init(){
   setLayout(V.LAYOUT || 'B');
   await loadSourceInputs();
   await loadClips();
-  syncFaceBoxFromV();
   syncShortsFrameFromV();
   draw();
 }
 
 window.addEventListener('resize', () => {
-  syncFaceBoxFromV();
   syncShortsFrameFromV();
+  if($('#clip-edit-modal').classList.contains('open') && modalFcActive){
+    initFacecamFramingBox();
+  }
 });
 
 init();

@@ -4,10 +4,11 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/config.env"
 
-IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN=""
-while getopts "i:s:e:l:o:a:t:f:" o; do
+IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN="" FC_CROP=""
+while getopts "i:s:e:l:o:a:t:f:c:" o; do
   case $o in i) IN=$OPTARG;; s) S=$OPTARG;; e) E=$OPTARG;; l) L=$OPTARG;;
-             o) OUT=$OPTARG;; a) ASS=$OPTARG;; t) HOOK=$OPTARG;; f) FC_IN=$OPTARG;; *) exit 1;; esac
+             o) OUT=$OPTARG;; a) ASS=$OPTARG;; t) HOOK=$OPTARG;; f) FC_IN=$OPTARG;;
+             c) FC_CROP=$OPTARG;; *) exit 1;; esac
 done
 [[ -z $IN || -z $S || -z $E || -z $OUT ]] && { sed -n '2p' "$0"; exit 1; }
 
@@ -31,6 +32,15 @@ crop_for() {
 }
 
 FACE="crop=${FACE_W}:${FACE_H}:${FACE_X}:${FACE_Y}"
+FC_CROP_FILTER=""
+if [[ -n $FC_CROP ]]; then
+  if [[ $FC_CROP == crop=* ]]; then
+    FC_CROP_FILTER="$FC_CROP"
+  else
+    FC_CROP_FILTER="crop=${FC_CROP}"
+  fi
+fi
+
 FC_ARGS=()
 if [[ -n $FC_IN ]]; then
   FC_ARGS=(-ss "$S" -to "$E" -i "$FC_IN")
@@ -40,17 +50,27 @@ if [[ $L == A ]]; then
   read cw ch cx <<< "$(crop_for "$A_PANEL_H" "${A_MAIN_X:-auto}")"
   SW=$(( OUT_W / 4 )); SH=$(( OUT_H / 4 ))
   if [[ -n $FC_IN ]]; then
-    FG="[0:v]split=2[a][b];
+    if [[ -n $FC_CROP_FILTER ]]; then
+      FG="[0:v]split=2[a][b];
+[a]scale=${OUT_W}:${OUT_H}:force_original_aspect_ratio=increase,crop=${OUT_W}:${OUT_H},scale=${SW}:${SH},boxblur=${A_BLUR}:2,scale=${OUT_W}:${OUT_H},eq=brightness=-0.06[bg];
+[b]crop=${cw}:${ch}:${cx}:0,scale=${OUT_W}:${A_PANEL_H}[main];
+[1:v]${FC_CROP_FILTER},scale=${A_FACE_W}:-2[face];
+[bg][main]overlay=0:(H-h)/2[t1];
+[t1][face]overlay=W-w-${A_FACE_RIGHT}:H-h-${A_FACE_BOTTOM}[v0]"
+    else
+      FG="[0:v]split=2[a][b];
 [a]scale=${OUT_W}:${OUT_H}:force_original_aspect_ratio=increase,crop=${OUT_W}:${OUT_H},scale=${SW}:${SH},boxblur=${A_BLUR}:2,scale=${OUT_W}:${OUT_H},eq=brightness=-0.06[bg];
 [b]crop=${cw}:${ch}:${cx}:0,scale=${OUT_W}:${A_PANEL_H}[main];
 [1:v]scale=${A_FACE_W}:-2[face];
 [bg][main]overlay=0:(H-h)/2[t1];
 [t1][face]overlay=W-w-${A_FACE_RIGHT}:H-h-${A_FACE_BOTTOM}[v0]"
+    fi
   else
+    CROP_TO_USE="${FC_CROP_FILTER:-$FACE}"
     FG="[0:v]split=3[a][b][c];
 [a]scale=${OUT_W}:${OUT_H}:force_original_aspect_ratio=increase,crop=${OUT_W}:${OUT_H},scale=${SW}:${SH},boxblur=${A_BLUR}:2,scale=${OUT_W}:${OUT_H},eq=brightness=-0.06[bg];
 [b]crop=${cw}:${ch}:${cx}:0,scale=${OUT_W}:${A_PANEL_H}[main];
-[c]${FACE},scale=${A_FACE_W}:-2[face];
+[c]${CROP_TO_USE},scale=${A_FACE_W}:-2[face];
 [bg][main]overlay=0:(H-h)/2[t1];
 [t1][face]overlay=W-w-${A_FACE_RIGHT}:H-h-${A_FACE_BOTTOM}[v0]"
   fi
@@ -63,12 +83,19 @@ else
     TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=decrease,pad=${OUT_W}:${TOP}:(ow-iw)/2:(oh-ih)/2:black"
   fi
   if [[ -n $FC_IN ]]; then
-    FG="[1:v]${TOPF}[top];
+    if [[ -n $FC_CROP_FILTER ]]; then
+      FG="[1:v]${FC_CROP_FILTER},${TOPF}[top];
 [0:v]crop=${cw}:${ch}:${cx}:0,scale=${OUT_W}:${BOT}[bot];
 [top][bot]vstack,drawbox=x=0:y=$(( TOP - B_DIV_PX / 2 )):w=iw:h=${B_DIV_PX}:color=${B_DIV_COLOR}:t=fill[v0]"
+    else
+      FG="[1:v]${TOPF}[top];
+[0:v]crop=${cw}:${ch}:${cx}:0,scale=${OUT_W}:${BOT}[bot];
+[top][bot]vstack,drawbox=x=0:y=$(( TOP - B_DIV_PX / 2 )):w=iw:h=${B_DIV_PX}:color=${B_DIV_COLOR}:t=fill[v0]"
+    fi
   else
+    CROP_TO_USE="${FC_CROP_FILTER:-$FACE}"
     FG="[0:v]split=2[f][g];
-[f]${FACE},${TOPF}[top];
+[f]${CROP_TO_USE},${TOPF}[top];
 [g]crop=${cw}:${ch}:${cx}:0,scale=${OUT_W}:${BOT}[bot];
 [top][bot]vstack,drawbox=x=0:y=$(( TOP - B_DIV_PX / 2 )):w=iw:h=${B_DIV_PX}:color=${B_DIV_COLOR}:t=fill[v0]"
   fi

@@ -329,6 +329,10 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
         elif job_type == "render":
             clips = payload.get("clips", [])
             if not clips:
+                single = payload.get("clip")
+                if single and isinstance(single, dict):
+                    clips = [single]
+            if not clips:
                 with jobs_lock:
                     job["log"].append("! No clips provided to render")
                     job["status"] = "error"
@@ -455,6 +459,15 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                     render_cmd.extend(["-t", hook])
                 if facecam_rel:
                     render_cmd.extend(["-f", facecam_rel])
+                
+                # Optional facecam framing crop
+                facecam_crop = (item.get("facecam_crop") or payload.get("facecam_crop") or "").strip()
+                if facecam_crop:
+                    clean_crop = facecam_crop.replace("crop=", "").strip()
+                    if re.match(r'^\d+:\d+:\d+:\d+$', clean_crop):
+                        render_cmd.extend(["-c", clean_crop])
+                        with jobs_lock:
+                            job["log"].append(f"Applying facecam framing crop: {clean_crop}")
 
                 ret = run_command_logged(render_cmd, job)
                 if ret != 0 or not (BASE_DIR / out_mp4).exists():
