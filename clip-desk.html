@@ -107,20 +107,32 @@ h1{font:700 16px Inter,sans-serif;margin:0;letter-spacing:-0.2px}
 #status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn)}
 #status.on::before{background:var(--ok)}
 
-/* Main Layout */
-main{
+/* Main Layout & App Workspace */
+.app-layout{
+  display:flex;
   flex:1;
-  max-width:1300px;
   width:100%;
-  margin:0 auto;
+  height:calc(100vh - 56px);
+  overflow:hidden;
+  position:relative;
+}
+main, .wizard-main{
+  flex:1;
+  min-width:0;
+  height:100%;
+  overflow-y:auto;
   padding:24px 20px;
   display:flex;
   flex-direction:column;
   gap:20px;
 }
-
-/* Wizard Steps Container */
-.wizard-step{display:none;animation:fadeIn 0.2s ease}
+.wizard-step{
+  display:none;
+  animation:fadeIn 0.2s ease;
+  max-width:1100px;
+  width:100%;
+  margin:0 auto;
+}
 .wizard-step.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -663,20 +675,103 @@ main{
 .ratio-pill:hover{color:var(--tx);border-color:var(--line-light)}
 .ratio-pill.active{background:var(--panel3);color:#fff;border-color:var(--acc);font-weight:600}
 
-/* Live Terminal Log */
-.log-box{
-  background:var(--field);
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  height:180px;
-  overflow:auto;
-  padding:12px;
-  font:12px/1.5 ui-monospace,Consolas,monospace;
-  white-space:pre-wrap;
-  color:#9ca3af;
-  margin-top:16px;
+/* Right-Side Adjustable Logs Panel */
+.logs-resizer{
+  width:8px;
+  cursor:col-resize;
+  background:var(--bg);
+  border-left:1px solid var(--line);
+  border-right:1px solid var(--line);
+  position:relative;
+  user-select:none;
+  touch-action:none;
+  transition:background 0.15s ease;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
 }
-.log-header{display:flex;align-items:center;justify-content:space-between;margin-top:16px;margin-bottom:6px}
+.logs-resizer:hover, .logs-resizer.dragging{
+  background:var(--acc);
+}
+.logs-resizer-line{
+  width:2px;
+  height:28px;
+  background:var(--line-light);
+  border-radius:1px;
+}
+.logs-panel{
+  width:380px;
+  min-width:240px;
+  max-width:65vw;
+  height:100%;
+  background:var(--panel);
+  border-left:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+  z-index:15;
+}
+.logs-panel.collapsed{
+  width:0px !important;
+  min-width:0px !important;
+  border-left:none;
+}
+.logs-panel-header{
+  height:44px;
+  padding:0 12px;
+  border-bottom:1px solid var(--line);
+  background:var(--panel2);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  user-select:none;
+  flex-shrink:0;
+}
+.logs-panel-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  font-size:12px;
+  color:var(--tx);
+  white-space:nowrap;
+}
+.logs-indicator{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--ok);
+  box-shadow:0 0 6px rgba(16,185,129,0.6);
+  flex-shrink:0;
+}
+.logs-panel-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.logs-panel .log-box{
+  flex:1;
+  height:100%;
+  margin:0;
+  border:none;
+  border-radius:0;
+  background:var(--field);
+  overflow-y:auto;
+  padding:12px 14px;
+  font:11.5px/1.5 ui-monospace,Consolas,monospace;
+  color:#9ca3af;
+  white-space:pre-wrap;
+  word-break:break-all;
+}
+@media (max-width:768px){
+  .app-layout{flex-direction:column;height:auto}
+  main, .wizard-main{height:auto;overflow-y:visible}
+  .logs-resizer{display:none}
+  .logs-panel{width:100% !important;min-width:100% !important;height:240px;border-left:none;border-top:1px solid var(--line)}
+}
 
 /* Rendered Output Gallery */
 .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px}
@@ -795,12 +890,14 @@ main{
   </nav>
 
   <div class="header-actions">
+    <button class="btn sm" id="btn-toggle-logs-header" title="Toggle right-side logs panel">📜 Logs Panel</button>
     <button class="btn sm" id="btn-adv-toggle">⚙️ Advanced Settings</button>
     <span id="status">Checking backend…</span>
   </div>
 </header>
 
-<main>
+<div class="app-layout" id="app-layout">
+<main class="wizard-main" id="wizard-main">
 
   <!-- STEP 1: Video Source & Clip Finding -->
   <section class="wizard-step active" id="step-1">
@@ -1013,13 +1110,6 @@ main{
         </div>
       </div>
 
-      <!-- Live Terminal Output -->
-      <div class="log-header">
-        <span style="font-weight:600;font-size:12px;color:var(--mut)">Activity Log & Progress</span>
-        <button class="btn sm" id="btn-clear-log">Clear</button>
-      </div>
-      <div class="log-box" id="log" role="log" aria-live="polite"></div>
-
       <!-- Finished Videos Gallery -->
       <div id="gallery-wrap" style="margin-top:24px;display:none">
         <h3 style="font-size:14px;font-weight:600;margin:0 0 12px;color:var(--ok)">🎉 Render Complete! Your Shorts are Ready:</h3>
@@ -1034,6 +1124,34 @@ main{
   </section>
 
 </main>
+
+<!-- Logs Resizer Handle -->
+<div class="logs-resizer" id="logs-resizer" title="Drag left/right to adjust logs width">
+  <div class="logs-resizer-line"></div>
+</div>
+
+<!-- Right-Side Adjustable Logs Panel -->
+<aside class="logs-panel" id="logs-panel">
+  <div class="logs-panel-header">
+    <div class="logs-panel-title">
+      <span class="logs-indicator" id="logs-indicator"></span>
+      <span>Terminal & Activity Log</span>
+    </div>
+    <div class="logs-panel-actions">
+      <button class="btn sm" id="btn-copy-log" title="Copy full log to clipboard">📋 Copy</button>
+      <button class="btn sm" id="btn-clear-log" title="Clear log output">Clear</button>
+      <button class="btn sm icon-btn" id="btn-toggle-log-panel" title="Collapse / Expand logs panel" style="padding:4px 8px">⯈</button>
+    </div>
+  </div>
+  <div class="log-box" id="log" role="log" aria-live="polite"></div>
+</aside>
+
+</div> <!-- /.app-layout -->
+
+<!-- Floating button to reopen when collapsed -->
+<button class="btn sm" id="btn-open-log-drawer" style="display:none;position:fixed;right:14px;bottom:16px;z-index:35;background:var(--panel2);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,0.5);align-items:center;gap:6px">
+  <span class="logs-indicator"></span> 📜 Terminal Log
+</button>
 
 <!-- Edit Clip & Clip-Specific Facecam Framing Modal -->
 <div class="modal-overlay" id="clip-edit-modal">
@@ -2514,6 +2632,9 @@ $('#btn-clip-edit-render').onclick = async () => {
 
 /* Background Job Handling */
 async function job(body, label){
+  if(typeof toggleLogsPanel === 'function' && logsPanel && logsPanel.classList.contains('collapsed')){
+    toggleLogsPanel(true);
+  }
   log('> ' + label);
   if(!live){ log('Demo mode: backend not running, simulated only.'); return; }
   try{
@@ -2592,6 +2713,107 @@ $('#btn-render-batch').onclick = async () => {
   job({type:'render', clips:c}, 'Rendering ' + c.length + ' short(s) with Layout ' + L);
 };
 $('#btn-clear-log').onclick = () => { $('#log').textContent = ''; };
+
+// Copy Logs to Clipboard with visual feedback
+$('#btn-copy-log').onclick = async () => {
+  const logEl = $('#log');
+  const text = logEl ? logEl.textContent : '';
+  if(!text){
+    alert('Log is currently empty.');
+    return;
+  }
+  const btn = $('#btn-copy-log');
+  const origHtml = btn.innerHTML;
+  try {
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    btn.innerHTML = '✓ Copied!';
+    btn.style.color = 'var(--ok)';
+    setTimeout(() => {
+      btn.innerHTML = origHtml;
+      btn.style.color = '';
+    }, 2000);
+  } catch(e) {
+    alert('Failed to copy: ' + e.message);
+  }
+};
+
+// Resizable & Collapsible Right-Side Logs Panel
+const logsPanel = $('#logs-panel');
+const logsResizer = $('#logs-resizer');
+let isResizingLogs = false;
+let logStartX = 0;
+let logStartWidth = 0;
+
+if(logsResizer && logsPanel){
+  logsResizer.addEventListener('pointerdown', e => {
+    isResizingLogs = true;
+    logsResizer.classList.add('dragging');
+    logsResizer.setPointerCapture(e.pointerId);
+    logStartX = e.clientX;
+    logStartWidth = logsPanel.offsetWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  window.addEventListener('pointermove', e => {
+    if(!isResizingLogs) return;
+    const delta = logStartX - e.clientX;
+    let newWidth = logStartWidth + delta;
+    const minW = 240;
+    const maxW = Math.round(window.innerWidth * 0.65);
+    newWidth = Math.max(minW, Math.min(maxW, newWidth));
+    logsPanel.style.width = newWidth + 'px';
+    logsPanel.classList.remove('collapsed');
+    try{ localStorage.setItem('clipdesk_log_width', newWidth); }catch{}
+  });
+
+  window.addEventListener('pointerup', () => {
+    if(isResizingLogs){
+      isResizingLogs = false;
+      logsResizer.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+}
+
+function toggleLogsPanel(forceExpand){
+  if(!logsPanel) return;
+  let isCollapsed;
+  if(forceExpand === true){
+    logsPanel.classList.remove('collapsed');
+    isCollapsed = false;
+  } else {
+    isCollapsed = logsPanel.classList.toggle('collapsed');
+  }
+  if(logsResizer) logsResizer.style.display = isCollapsed ? 'none' : 'flex';
+  const toggleBtn = $('#btn-toggle-log-panel');
+  if(toggleBtn) toggleBtn.textContent = isCollapsed ? '⯇' : '⯈';
+  const openFloatBtn = $('#btn-open-log-drawer');
+  if(openFloatBtn) openFloatBtn.style.display = isCollapsed ? 'flex' : 'none';
+  try{ localStorage.setItem('clipdesk_log_collapsed', isCollapsed ? '1' : '0'); }catch{}
+}
+
+if($('#btn-toggle-log-panel')) $('#btn-toggle-log-panel').onclick = () => toggleLogsPanel();
+if($('#btn-toggle-logs-header')) $('#btn-toggle-logs-header').onclick = () => toggleLogsPanel();
+if($('#btn-open-log-drawer')) $('#btn-open-log-drawer').onclick = () => toggleLogsPanel(true);
+
+// Restore saved logs panel width and collapsed state
+try {
+  const savedWidth = localStorage.getItem('clipdesk_log_width');
+  if(savedWidth && +savedWidth >= 240 && logsPanel) logsPanel.style.width = savedWidth + 'px';
+  const savedCollapsed = localStorage.getItem('clipdesk_log_collapsed');
+  if(savedCollapsed === '1') toggleLogsPanel();
+} catch{}
 
 /* Init */
 async function init(){
