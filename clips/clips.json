@@ -17,11 +17,13 @@
     "facecam": "input/WhatsApp_Video_2026-11-22_at_10.47.27_AM.mp4",
     "fc_crop_coords": {
       "w": 478,
-      "h": 748,
+      "h": 372,
       "x": 0,
-      "y": 78
+      "y": 186
     },
-    "facecam_crop": "478:748:0:78"
+    "facecam_crop": "478:372:0:186",
+    "b_top_pct": 25,
+    "facecam_fit": "stretch"
   },
   {
     "file": "clip_02.mp4",

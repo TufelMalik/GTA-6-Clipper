@@ -125,6 +125,14 @@ if [[ -n $ASS ]]; then
   LAST=v2
 fi
 
+case "$PRESET" in
+  1) PRESET="slow" ;;
+  2) PRESET="medium" ;;
+  3) PRESET="fast" ;;
+  4) PRESET="veryfast" ;;
+  5) PRESET="ultrafast" ;;
+esac
+
 if [[ $ENCODER == h264_qsv ]]; then VENC=(-c:v h264_qsv -global_quality 23 -look_ahead 0)
 else VENC=(-c:v libx264 -preset "$PRESET" -crf "$CRF"); fi
 
