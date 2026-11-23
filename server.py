@@ -625,6 +625,25 @@ async def post_config(request: Request):
     return {"ok": True}
 
 
+@app.get("/api/outputs")
+def get_outputs():
+    results = []
+    if OUT_DIR.exists():
+        for p in OUT_DIR.glob("*.mp4"):
+            try:
+                st = p.stat()
+                results.append({
+                    "name": p.name,
+                    "path": f"out/{p.name}",
+                    "size_mb": round(st.st_size / (1024 * 1024), 1),
+                    "mtime": st.st_mtime
+                })
+            except Exception:
+                pass
+    results.sort(key=lambda x: x["mtime"], reverse=True)
+    return results
+
+
 @app.get("/api/clips")
 def get_clips():
     clips_json_path = CLIPS_DIR / "clips.json"

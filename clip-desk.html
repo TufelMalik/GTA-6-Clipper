@@ -475,11 +475,12 @@ main, .wizard-main{
 .queue-card:hover{border-color:var(--line-light)}
 .queue-card.rendering{border-color:var(--warn);background:#f59e0b08}
 .queue-card.done{border-color:var(--ok);background:#10b98108}
-.qcard-main{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
-.qcard-left{display:flex;align-items:center;gap:14px;flex:1;min-width:260px}
+.qcard-main{display:flex;flex-direction:column;gap:10px}
+.qcard-left{display:flex;align-items:flex-start;gap:10px;width:100%}
 .qcard-num{
-  width:28px;
-  height:28px;
+  width:26px;
+  height:26px;
+  min-width:26px;
   border-radius:50%;
   background:var(--panel2);
   border:1px solid var(--line);
@@ -487,21 +488,22 @@ main, .wizard-main{
   align-items:center;
   justify-content:center;
   font-weight:700;
-  font-size:12px;
+  font-size:11px;
   color:var(--mut);
 }
-.qcard-info{flex:1}
-.qcard-title{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
-.qcard-hook{font-family:Anton,Impact,sans-serif;font-size:15px;color:#facc15;letter-spacing:0.5px}
-.qcard-meta{color:var(--mut);font-size:11px;display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap}
-.qcard-actions{display:flex;gap:8px;align-items:center}
+.qcard-info{flex:1;min-width:0}
+.qcard-title{font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px}
+.qcard-hook{font-family:Anton,Impact,sans-serif;font-size:14px;color:#facc15;letter-spacing:0.5px;line-height:1.25}
+.qcard-meta{color:var(--mut);font-size:11px;display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.qcard-actions{display:flex;gap:6px;align-items:center;width:100%}
+.qcard-actions .btn{flex:1;justify-content:center;font-size:11px;padding:6px 8px}
 .qcard-result{
   border-top:1px solid var(--line);
-  padding-top:10px;
+  padding-top:8px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:14px;
+  gap:8px;
   flex-wrap:wrap;
 }
 
@@ -857,19 +859,106 @@ main, .wizard-main{
   .logs-panel{width:100% !important;min-width:100% !important;height:240px;border-left:none;border-top:1px solid var(--line)}
 }
 
-/* Rendered Output Gallery */
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:20px}
-.output-card{
-  background:var(--panel2);
-  border:1px solid var(--line);
-  border-radius:var(--r);
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
+/* Step 4: Left Panel & Center Rendered Gallery Grid Layout */
+#step-4.wizard-step{
+  max-width:100% !important;
+  margin:0 !important;
+  width:100%;
 }
-.output-video{width:100%;aspect-ratio:9/16;background:#000;max-height:400px}
-.output-body{padding:12px;display:flex;flex-direction:column;gap:8px}
-.output-name{font-weight:600;font-size:12px;word-break:break-all}
+.step4-layout-grid{
+  display:grid;
+  grid-template-columns: 460px 1fr;
+  gap: 20px;
+  align-items: start;
+  width: 100%;
+}
+@media (max-width: 1280px){
+  .step4-layout-grid{
+    grid-template-columns: 400px 1fr;
+    gap: 16px;
+  }
+}
+@media (max-width: 960px){
+  .step4-layout-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Rendered Output Gallery Grid View */
+.gallery-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.output-card{
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+.output-card:hover{
+  border-color: rgba(255,210,63,0.5);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  transform: translateY(-2px);
+}
+.output-video-wrap{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9/16;
+  background: #050608;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.output-video{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+.output-badge-overlay{
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffd23f;
+  pointer-events: none;
+  z-index: 2;
+}
+.output-body{
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+.output-name{
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--tx);
+  word-break: break-all;
+  line-height: 1.35;
+}
+.output-meta{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--mut);
+}
 
 /* Bottom Navigation Bar */
 .wizard-nav{
@@ -1156,54 +1245,90 @@ main, .wizard-main{
 
   <!-- STEP 4: Render & Export -->
   <section class="wizard-step" id="step-4">
-    <div class="card">
-      <h2 class="card-title">4. Render & Export Shorts</h2>
-      <p class="card-desc">Review your queue. You can add clip-specific facecams with visual source framing, render any clip individually, or export the full batch.</p>
+    <div class="step4-layout-grid">
 
-      <div class="render-summary">
-        <div class="render-details">
-          <div class="render-stat">
-            <span class="stat-label">Selected Clips</span>
-            <span class="stat-val" id="summary-clips-count">0</span>
+      <!-- LEFT PANEL: Queue & Export Controls (Moved to Left Side) -->
+      <div class="step4-left-panel">
+        <div class="card">
+          <div style="margin-bottom:12px">
+            <h2 class="card-title" style="margin-bottom:4px;font-size:15px">4. Render & Export Shorts</h2>
+            <p class="card-desc" style="margin-bottom:0;font-size:12px">Review queue, customize facecams & render individual clips or batch.</p>
           </div>
-          <div class="render-stat">
-            <span class="stat-label">Layout Style</span>
-            <span class="stat-val" id="summary-layout">Split Screen (B)</span>
+
+          <!-- Compact Render Summary -->
+          <div class="render-summary" style="flex-direction:column;gap:10px;align-items:stretch;margin-bottom:16px">
+            <div class="render-details" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+              <div class="render-stat" style="padding:6px 8px">
+                <span class="stat-label" style="font-size:10px">Selected</span>
+                <span class="stat-val" id="summary-clips-count" style="font-size:14px">0</span>
+              </div>
+              <div class="render-stat" style="padding:6px 8px">
+                <span class="stat-label" style="font-size:10px">Layout</span>
+                <span class="stat-val" id="summary-layout" style="font-size:12px">Layout B</span>
+              </div>
+              <div class="render-stat" style="padding:6px 8px">
+                <span class="stat-label" style="font-size:10px">Quality</span>
+                <span class="stat-val" style="font-size:12px">1080×1920</span>
+              </div>
+            </div>
+            <button class="btn p" id="btn-render-batch" style="width:100%;justify-content:center;padding:10px 14px;font-size:13px">
+              🚀 Start Rendering All Selected
+            </button>
           </div>
-          <div class="render-stat">
-            <span class="stat-label">Resolution</span>
-            <span class="stat-val">1080 × 1920 (60fps)</span>
+
+          <!-- Clips Queue & Single Clip Export -->
+          <div class="queue-section" id="queue-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div>
+                <h3 style="font-size:13px;font-weight:600;margin:0">🎬 Selected Clips Queue</h3>
+                <span style="font-size:11px;color:var(--mut)">Tweak facecams & render shorts</span>
+              </div>
+              <span style="font-size:11px;color:var(--acc);font-weight:600" id="queue-count-sub">0 clips ready</span>
+            </div>
+            <div class="queue-cards" id="step4-queue-cards" style="max-height:calc(100vh - 440px);overflow-y:auto;padding-right:2px">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <div class="wizard-nav" style="margin-top:16px;padding-top:12px">
+            <button class="btn sm" id="nav-step4-back">← Back</button>
+            <button class="btn sm" onclick="goToStep(1)">Start Another Video</button>
           </div>
         </div>
-        <button class="btn p lg" id="btn-render-batch">
-          🚀 Start Rendering All Selected
-        </button>
       </div>
 
-      <!-- Clips Queue & Single Clip Export -->
-      <div class="queue-section" id="queue-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div>
-            <h3 style="font-size:14px;font-weight:600;margin:0">🎬 Selected Clips Queue</h3>
-            <span style="font-size:12px;color:var(--mut)">Configure clip-specific facecam framing or render individual shorts</span>
+      <!-- CENTER / MAIN PANEL: Rendered Shorts Grid View (In Center) -->
+      <div class="step4-center-gallery">
+        <div class="card" style="min-height:560px;display:flex;flex-direction:column">
+          <div class="gallery-header-bar" style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--line)">
+            <div>
+              <h2 class="card-title" style="margin:0 0 4px;font-size:16px">
+                <span>🎉 Rendered Shorts (Grid View)</span>
+                <span class="live-pill" style="font-size:11px;background:rgba(16,185,129,0.15);color:var(--ok);padding:2px 8px;border-radius:12px;font-weight:600" id="gallery-count-badge">0 Videos Ready</span>
+              </h2>
+              <span style="font-size:12px;color:var(--mut)">Completed vertical 9:16 shorts with animated captions, facecam framing, and sound</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn sm" onclick="loadRenderedOutputs()" title="Refresh rendered clips from out folder">🔄 Refresh Grid</button>
+            </div>
           </div>
-          <span style="font-size:12px;color:var(--acc);font-weight:600" id="queue-count-sub">0 clips ready</span>
-        </div>
-        <div class="queue-cards" id="step4-queue-cards">
-          <!-- Rendered dynamically -->
+
+          <!-- Video Grid Container -->
+          <div class="gallery-scroll-area" style="flex:1">
+            <div class="gallery-grid" id="gallery">
+              <!-- Rendered cards appear here dynamically -->
+            </div>
+            <div class="gallery-empty-state" id="gallery-empty-state" style="display:none;text-align:center;padding:80px 20px;color:var(--mut)">
+              <div style="font-size:44px;margin-bottom:12px;opacity:0.8">🎬</div>
+              <div style="font-size:15px;font-weight:600;color:var(--tx);margin-bottom:6px">No Rendered Shorts Yet</div>
+              <div style="font-size:12px;max-width:340px;margin:0 auto;line-height:1.5">
+                Click <b>"🎬 Render Clip"</b> on any clip on the left or <b>"🚀 Start Rendering All Selected"</b> to produce your 9:16 vertical shorts!
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Finished Videos Gallery -->
-      <div id="gallery-wrap" style="margin-top:24px;display:none">
-        <h3 style="font-size:14px;font-weight:600;margin:0 0 12px;color:var(--ok)">🎉 Render Complete! Your Shorts are Ready:</h3>
-        <div class="gallery" id="gallery"></div>
-      </div>
-
-      <div class="wizard-nav">
-        <button class="btn" id="nav-step4-back">← Back to Customization</button>
-        <button class="btn" onclick="goToStep(1)">Start Another Video</button>
-      </div>
     </div>
   </section>
 
@@ -1506,6 +1631,7 @@ function goToStep(s){
   if(s === 4){
     updateSummary();
     renderStep4Queue();
+    loadRenderedOutputs();
   }
   window.scrollTo({top:0, behavior:'smooth'});
 }
@@ -2104,6 +2230,7 @@ async function renderSingleClip(idx){
   const outPath = `out/${stem}_${clipPayload.layout}.mp4`;
   singleRenderOutputs[c.file] = outPath;
   if(card) card.classList.add('done');
+  await loadRenderedOutputs();
 
   const resContainer = $(`#qcard-res-${idx}`);
   if(resContainer){
@@ -2933,32 +3060,69 @@ function updateSummary(){
   $('#summary-layout').textContent = L === 'B' ? 'Split Screen (Layout B)' : 'Blurred Background (Layout A)';
 }
 
-function displayRenderGallery(outputs){
-  const wrap = $('#gallery-wrap');
-  const gallery = $('#gallery');
-  gallery.innerHTML = '';
-  if(!outputs.length){ wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
+let renderedOutputsList = [];
 
-  outputs.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'output-card';
-    const filename = p.split('/').pop();
-    card.innerHTML = `
-      <video class="output-video" controls playsinline preload="metadata">
-        <source src="/${p}" type="video/mp4">
-      </video>
-      <div class="output-body">
-        <div class="output-name">🎬 ${filename}</div>
-        <div style="display:flex;gap:8px">
-          <a class="btn sm p" href="/${p}" download style="text-decoration:none;flex:1">⬇ Download Video</a>
-          <button class="btn sm" onclick="window.open('/${p}', '_blank')">↗ Open</button>
+async function loadRenderedOutputs(){
+  try{
+    const res = await api('/api/outputs');
+    if(Array.isArray(res)){
+      renderedOutputsList = res;
+      renderGalleryGrid(renderedOutputsList);
+    }
+  }catch(e){
+    console.error('Failed to load rendered outputs:', e);
+  }
+}
+
+function displayRenderGallery(outputs){
+  loadRenderedOutputs();
+}
+
+function renderGalleryGrid(outputs){
+  const gallery = $('#gallery');
+  const emptyState = $('#gallery-empty-state');
+  const countBadge = $('#gallery-count-badge');
+  if(!gallery) return;
+
+  if(countBadge){
+    countBadge.textContent = `${outputs.length} Video${outputs.length === 1 ? '' : 's'} Ready`;
+  }
+
+  if(!outputs || !outputs.length){
+    gallery.innerHTML = '';
+    if(emptyState) emptyState.style.display = 'block';
+    return;
+  }
+  if(emptyState) emptyState.style.display = 'none';
+
+  gallery.innerHTML = outputs.map(item => {
+    const p = typeof item === 'string' ? item : item.path;
+    const filename = typeof item === 'string' ? p.split('/').pop() : item.name;
+    const sizeMb = (item && item.size_mb) ? `${item.size_mb} MB` : '';
+    const layoutTag = filename.includes('_B') ? 'Layout B (Split)' : (filename.includes('_A') ? 'Layout A (Blur)' : '9:16 Short');
+
+    return `
+      <div class="output-card" id="out-card-${filename.replace(/[^a-zA-Z0-9]/g, '_')}">
+        <div class="output-video-wrap">
+          <span class="output-badge-overlay">${layoutTag}</span>
+          <video class="output-video" controls playsinline preload="metadata">
+            <source src="/${p}" type="video/mp4">
+          </video>
+        </div>
+        <div class="output-body">
+          <div class="output-name" title="${filename}">🎬 ${filename}</div>
+          <div class="output-meta">
+            <span>📐 1080×1920 (9:16)</span>
+            ${sizeMb ? `<span>💾 ${sizeMb}</span>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;margin-top:2px">
+            <a class="btn sm p" href="/${p}" download style="text-decoration:none;flex:1;justify-content:center">⬇ Download</a>
+            <button class="btn sm" onclick="window.open('/${p}', '_blank')" title="Open video in new tab">↗ Open</button>
+          </div>
         </div>
       </div>
     `;
-    gallery.append(card);
-  });
-  wrap.scrollIntoView({behavior:'smooth'});
+  }).join('');
 }
 
 /* Actions */
@@ -3099,6 +3263,7 @@ async function init(){
   setLayout(V.LAYOUT || 'B');
   await loadSourceInputs();
   await loadClips();
+  await loadRenderedOutputs();
   syncShortsFrameFromV();
   draw();
 }
