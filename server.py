@@ -6,11 +6,14 @@ import uuid
 import shutil
 import threading
 import subprocess
+import io
+import time
+import zipfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 
@@ -20,10 +23,13 @@ UI_SETTINGS_PATH = BASE_DIR / "ui_settings.json"
 CLIPS_DIR = BASE_DIR / "clips"
 OUT_DIR = BASE_DIR / "out"
 INPUTS_DIR = BASE_DIR / "input"
+PROJECTS_DIR = BASE_DIR / "projects"
+PROJECTS_INDEX_PATH = PROJECTS_DIR / "projects.json"
 
 CLIPS_DIR.mkdir(parents=True, exist_ok=True)
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 INPUTS_DIR.mkdir(parents=True, exist_ok=True)
+PROJECTS_DIR.mkdir(parents=True, exist_ok=True)
 
 UI_KEYS = {"LAYOUT", "CAP_STYLE", "CAP_CHUNK", "CAP_HL", "CAP_UPPER"}
 DEFAULT_UI_SETTINGS: Dict[str, Any] = {
@@ -39,6 +45,75 @@ jobs_lock = threading.Lock()
 jobs: Dict[str, Dict[str, Any]] = {}
 
 app = FastAPI(title="GTA Clip Desk Server")
+
+
+def get_project_dir(project_id: str) -> Path:
+    safe_id = re.sub(r'[^a-zA-Z0-9_\-]', '', project_id)
+    if not safe_id:
+        safe_id = "default"
+    p = PROJECTS_DIR / safe_id
+    p.mkdir(parents=True, exist_ok=True)
+    (p / "out").mkdir(parents=True, exist_ok=True)
+    return p
+
+
+def load_projects_index() -> List[Dict[str, Any]]:
+    if not PROJECTS_INDEX_PATH.exists():
+        default_proj = {
+            "id": "default",
+            "name": "GTA 6 - Fighter Jet (Default)",
+            "source": "input/sample.webm",
+            "created_at": time.time(),
+            "updated_at": time.time(),
+            "step": 4
+        }
+        # Migrate existing root clips.json if present
+        p_dir = get_project_dir("default")
+        root_clips = CLIPS_DIR / "clips.json"
+        p_clips = p_dir / "clips.json"
+        if root_clips.exists() and not p_clips.exists():
+            try:
+                shutil.copy2(root_clips, p_clips)
+            except Exception:
+                pass
+
+        # Migrate existing out/ files if present
+        p_out = p_dir / "out"
+        if OUT_DIR.exists():
+            for f in OUT_DIR.glob("*"):
+                if f.is_file() and not (p_out / f.name).exists():
+                    try:
+                        shutil.copy2(f, p_out / f.name)
+                    except Exception:
+                        pass
+
+        index = [default_proj]
+        save_projects_index(index)
+        return index
+
+    try:
+        data = json.loads(PROJECTS_INDEX_PATH.read_text(encoding="utf-8"))
+        if isinstance(data, list):
+            return data
+    except Exception:
+        pass
+    return []
+
+
+def save_projects_index(index: List[Dict[str, Any]]) -> None:
+    PROJECTS_INDEX_PATH.write_text(json.dumps(index, indent=2), encoding="utf-8")
+
+
+def update_project_meta(project_id: str, **kwargs) -> Optional[Dict[str, Any]]:
+    index = load_projects_index()
+    for p in index:
+        if p["id"] == project_id:
+            for k, v in kwargs.items():
+                p[k] = v
+            p["updated_at"] = time.time()
+            save_projects_index(index)
+            return p
+    return None
 
 
 def hex_to_bbggrr(color_str: str) -> str:
@@ -251,6 +326,14 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
     with jobs_lock:
         job = jobs[job_id]
 
+    project_id = (payload.get("project") or "").strip()
+    if project_id:
+        p_dir = get_project_dir(project_id)
+        proj_out_dir = p_dir / "out"
+        proj_out_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        proj_out_dir = OUT_DIR
+
     try:
         if job_type == "find_clips":
             source_raw = payload.get("source", "input/sample.mp4")
@@ -272,9 +355,15 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
 
             ret = run_command_logged([gemini_cmd, "-p", prompt_text], job)
             clips_json_path = CLIPS_DIR / "clips.json"
+            if project_id and ret == 0 and clips_json_path.exists():
+                p_dir = get_project_dir(project_id)
+                shutil.copy2(clips_json_path, p_dir / "clips.json")
+                clips_json_path = p_dir / "clips.json"
+
             with jobs_lock:
                 if ret == 0 and clips_json_path.exists():
-                    job["outputs"].append("clips/clips.json")
+                    out_rel = f"projects/{project_id}/clips.json" if project_id else "clips/clips.json"
+                    job["outputs"].append(out_rel)
                     job["status"] = "done"
                 else:
                     if ret != 0:
@@ -302,7 +391,8 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                     return
 
                 stem = clip_path.stem
-                words_file = f"out/{stem}.words.json"
+                words_file = f"projects/{project_id}/out/{stem}.words.json" if project_id else f"out/{stem}.words.json"
+                (BASE_DIR / words_file).parent.mkdir(parents=True, exist_ok=True)
                 with jobs_lock:
                     job["log"].append(f"Transcribing clips/{filename} -> {words_file}...")
 
@@ -361,8 +451,9 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                 if layout not in ("A", "B"):
                     layout = "B"
 
-                words_file = f"out/{stem}.words.json"
+                words_file = f"projects/{project_id}/out/{stem}.words.json" if project_id else f"out/{stem}.words.json"
                 words_path = BASE_DIR / words_file
+                (BASE_DIR / words_file).parent.mkdir(parents=True, exist_ok=True)
                 if not words_path.exists():
                     with jobs_lock:
                         job["log"].append(f"words.json missing for {filename}, running transcribe first...")
@@ -381,8 +472,9 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                             job["status"] = "error"
                         return
 
-                ass_file = f"out/{stem}.ass"
+                ass_file = f"projects/{project_id}/out/{stem}.ass" if project_id else f"out/{stem}.ass"
                 ass_path = BASE_DIR / ass_file
+                (BASE_DIR / ass_file).parent.mkdir(parents=True, exist_ok=True)
                 with jobs_lock:
                     job["log"].append(f"Generating ASS subtitles for {filename} -> {ass_file}...")
 
@@ -416,10 +508,11 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                     return
                 duration_str = str(round(duration, 2))
 
-                out_mp4 = f"out/{stem}.mp4"
+                out_mp4 = f"projects/{project_id}/out/{stem}.mp4" if project_id else f"out/{stem}.mp4"
+                (BASE_DIR / out_mp4).parent.mkdir(parents=True, exist_ok=True)
                 # Clean up legacy style-suffixed files if present
                 for old_suffix in ("_B.mp4", "_A.mp4"):
-                    old_f = BASE_DIR / "out" / f"{stem}{old_suffix}"
+                    old_f = (BASE_DIR / out_mp4).parent / f"{stem}{old_suffix}"
                     if old_f.exists():
                         try:
                             old_f.unlink()
@@ -625,11 +718,221 @@ def get_frame(source: str = "input/sample.mp4"):
 
 app.mount("/out", StaticFiles(directory=str(OUT_DIR)), name="out")
 app.mount("/clips", StaticFiles(directory=str(CLIPS_DIR)), name="clips")
+app.mount("/projects", StaticFiles(directory=str(PROJECTS_DIR)), name="projects")
 
 
 @app.get("/api/health")
 def get_health():
     return {"ok": True}
+
+
+@app.get("/api/projects")
+def list_projects():
+    projects = load_projects_index()
+    res = []
+    for p in projects:
+        p_id = p["id"]
+        p_dir = PROJECTS_DIR / p_id
+
+        # Count clips
+        clips_cnt = 0
+        p_clips = p_dir / "clips.json"
+        if p_clips.exists():
+            try:
+                c_data = json.loads(p_clips.read_text(encoding="utf-8"))
+                if isinstance(c_data, list):
+                    clips_cnt = len(c_data)
+            except Exception:
+                pass
+        elif p_id == "default" and (CLIPS_DIR / "clips.json").exists():
+            try:
+                c_data = json.loads((CLIPS_DIR / "clips.json").read_text(encoding="utf-8"))
+                if isinstance(c_data, list):
+                    clips_cnt = len(c_data)
+            except Exception:
+                pass
+
+        # Count outputs
+        out_cnt = 0
+        total_mb = 0.0
+        p_out = p_dir / "out"
+        seen_out = set()
+        check_dirs = [p_out]
+        if p_id == "default" and OUT_DIR.exists():
+            check_dirs.append(OUT_DIR)
+        for od in check_dirs:
+            if od.exists():
+                for f in od.glob("*.mp4"):
+                    if f.name not in seen_out:
+                        seen_out.add(f.name)
+                        out_cnt += 1
+                        try:
+                            total_mb += f.stat().st_size / (1024 * 1024)
+                        except Exception:
+                            pass
+
+        item = dict(p)
+        item["clips_count"] = clips_cnt
+        item["outputs_count"] = out_cnt
+        item["total_size_mb"] = round(total_mb, 1)
+        res.append(item)
+    return res
+
+
+@app.post("/api/projects")
+async def create_project(request: Request):
+    data = await request.json()
+    name = (data.get("name") or "").strip()
+    source = (data.get("source") or "input/sample.webm").strip()
+    if not name:
+        name = Path(source).stem.replace("_", " ").title() if source else "New Video Project"
+
+    proj_id = f"proj_{int(time.time())}_{uuid.uuid4().hex[:4]}"
+    p_dir = get_project_dir(proj_id)
+    (p_dir / "clips.json").write_text("[]", encoding="utf-8")
+
+    new_proj = {
+        "id": proj_id,
+        "name": name,
+        "source": source,
+        "created_at": time.time(),
+        "updated_at": time.time(),
+        "step": 1
+    }
+
+    projects = load_projects_index()
+    projects.append(new_proj)
+    save_projects_index(projects)
+    return {"ok": True, "project": new_proj}
+
+
+@app.get("/api/projects/{project_id}")
+def get_project(project_id: str):
+    projects = load_projects_index()
+    proj = next((p for p in projects if p["id"] == project_id), None)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    p_dir = get_project_dir(project_id)
+    clips = []
+    p_clips = p_dir / "clips.json"
+    if p_clips.exists():
+        try:
+            clips = json.loads(p_clips.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    elif project_id == "default" and (CLIPS_DIR / "clips.json").exists():
+        try:
+            clips = json.loads((CLIPS_DIR / "clips.json").read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    return {
+        "ok": True,
+        "project": proj,
+        "clips": clips
+    }
+
+
+@app.put("/api/projects/{project_id}")
+async def update_project(project_id: str, request: Request):
+    data = await request.json()
+    projects = load_projects_index()
+    proj = next((p for p in projects if p["id"] == project_id), None)
+    if not proj:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    if "name" in data and str(data["name"]).strip():
+        proj["name"] = str(data["name"]).strip()
+    if "source" in data and str(data["source"]).strip():
+        proj["source"] = str(data["source"]).strip()
+    if "step" in data:
+        try:
+            proj["step"] = int(data["step"])
+        except Exception:
+            pass
+    proj["updated_at"] = time.time()
+    save_projects_index(projects)
+    return {"ok": True, "project": proj}
+
+
+@app.delete("/api/projects/{project_id}")
+def delete_project(project_id: str):
+    projects = load_projects_index()
+    existing = [p for p in projects if p["id"] == project_id]
+    if not existing:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    p_dir = PROJECTS_DIR / project_id
+    if p_dir.exists():
+        try:
+            shutil.rmtree(p_dir, ignore_errors=True)
+        except Exception:
+            pass
+
+    updated = [p for p in projects if p["id"] != project_id]
+    if not updated:
+        updated = [{
+            "id": f"proj_{int(time.time())}",
+            "name": "New Project 1",
+            "source": "input/sample.webm",
+            "created_at": time.time(),
+            "updated_at": time.time(),
+            "step": 1
+        }]
+
+    save_projects_index(updated)
+    return {"ok": True, "remaining": len(updated), "projects": updated}
+
+
+@app.get("/api/projects/{project_id}/zip")
+def download_project_zip(project_id: str):
+    p_dir = get_project_dir(project_id)
+    projects = load_projects_index()
+    proj = next((p for p in projects if p["id"] == project_id), None)
+    proj_name = proj["name"] if proj else project_id
+    safe_name = re.sub(r'[^a-zA-Z0-9_\-]', '_', proj_name)
+
+    import tempfile
+    temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
+    temp_zip_path = Path(temp_zip.name)
+    temp_zip.close()
+
+    with zipfile.ZipFile(temp_zip_path, mode="w", compression=zipfile.ZIP_STORED) as zf:
+        if proj:
+            zf.writestr("project.json", json.dumps(proj, indent=2))
+
+        p_clips = p_dir / "clips.json"
+        if p_clips.exists():
+            zf.write(p_clips, arcname="clips.json")
+        elif (CLIPS_DIR / "clips.json").exists() and project_id == "default":
+            zf.write(CLIPS_DIR / "clips.json", arcname="clips.json")
+
+        out_dirs = [p_dir / "out"]
+        if project_id == "default" and OUT_DIR.exists():
+            out_dirs.append(OUT_DIR)
+
+        seen_files = set()
+        for od in out_dirs:
+            if od.exists():
+                for f in od.glob("*"):
+                    if f.is_file() and f.name not in seen_files:
+                        seen_files.add(f.name)
+                        zf.write(f, arcname=f"shorts/{f.name}")
+
+        p_clip_dir = p_dir / "clips"
+        if p_clip_dir.exists():
+            for f in p_clip_dir.glob("*.mp4"):
+                zf.write(f, arcname=f"clips/{f.name}")
+        elif project_id == "default" and CLIPS_DIR.exists():
+            for f in CLIPS_DIR.glob("*.mp4"):
+                zf.write(f, arcname=f"clips/{f.name}")
+
+    return FileResponse(
+        str(temp_zip_path),
+        media_type="application/zip",
+        filename=f"{safe_name}_export.zip"
+    )
 
 
 @app.get("/api/config")
@@ -653,26 +956,58 @@ async def post_config(request: Request):
 
 
 @app.get("/api/outputs")
-def get_outputs():
+def get_outputs(project: Optional[str] = None):
     results = []
-    if OUT_DIR.exists():
-        for p in OUT_DIR.glob("*.mp4"):
-            try:
-                st = p.stat()
-                results.append({
-                    "name": p.name,
-                    "path": f"out/{p.name}",
-                    "size_mb": round(st.st_size / (1024 * 1024), 1),
-                    "mtime": st.st_mtime
-                })
-            except Exception:
-                pass
+    dirs_to_check = []
+    if project:
+        p_dir = get_project_dir(project)
+        dirs_to_check.append((p_dir / "out", f"projects/{project}/out"))
+        if project == "default":
+            dirs_to_check.append((OUT_DIR, "out"))
+    else:
+        dirs_to_check.append((OUT_DIR, "out"))
+        p_dir = PROJECTS_DIR / "default" / "out"
+        if p_dir.exists():
+            dirs_to_check.append((p_dir, "projects/default/out"))
+
+    seen_names = set()
+    for d, prefix in dirs_to_check:
+        if d.exists():
+            for p in d.glob("*.mp4"):
+                if p.name in seen_names:
+                    continue
+                seen_names.add(p.name)
+                try:
+                    st = p.stat()
+                    results.append({
+                        "name": p.name,
+                        "path": f"{prefix}/{p.name}",
+                        "size_mb": round(st.st_size / (1024 * 1024), 1),
+                        "mtime": st.st_mtime
+                    })
+                except Exception:
+                    pass
     results.sort(key=lambda x: x["mtime"], reverse=True)
     return results
 
 
 @app.get("/api/clips")
-def get_clips():
+def get_clips(project: Optional[str] = None):
+    if project:
+        p_dir = get_project_dir(project)
+        p_clips = p_dir / "clips.json"
+        if p_clips.exists():
+            try:
+                return json.loads(p_clips.read_text(encoding="utf-8"))
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Failed to parse clips.json: {e}")
+        if project == "default" and (CLIPS_DIR / "clips.json").exists():
+            try:
+                return json.loads((CLIPS_DIR / "clips.json").read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        return []
+
     clips_json_path = CLIPS_DIR / "clips.json"
     if clips_json_path.exists():
         try:
@@ -683,12 +1018,20 @@ def get_clips():
 
 
 @app.post("/api/clips")
-async def post_clips(request: Request):
+async def post_clips(request: Request, project: Optional[str] = None):
     data = await request.json()
     if not isinstance(data, list):
         raise HTTPException(status_code=400, detail="Expected list of clips")
-    clips_json_path = CLIPS_DIR / "clips.json"
-    clips_json_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+    if project:
+        p_dir = get_project_dir(project)
+        p_clips = p_dir / "clips.json"
+        p_clips.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        update_project_meta(project, clips_count=len(data))
+    else:
+        clips_json_path = CLIPS_DIR / "clips.json"
+        clips_json_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
     return {"ok": True, "count": len(data)}
 
 

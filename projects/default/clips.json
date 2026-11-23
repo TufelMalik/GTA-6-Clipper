@@ -1,0 +1,60 @@
+[
+  {
+    "file": "clip_01.mp4",
+    "start_sec": 252,
+    "end_sec": 289,
+    "game": "GTA6",
+    "event_type": "stunt",
+    "why": "Player ejects from a failing fighter jet between skyscrapers and parachutes over a resort pool as the jet crashes below.",
+    "hook_en": "Bro Ejected At Last Second",
+    "title": "GTA 6 Fighter Jet Ejection Stunt",
+    "description": "Escaping a damaged military jet between Vice City skyscrapers and parachuting over a luxury resort pool.",
+    "speech_language": "none",
+    "music_audible": true,
+    "confidence": 0.95,
+    "selected": true,
+    "layout": "B",
+    "facecam": "input/WhatsApp_Video_2026-11-22_at_10.47.27_AM.mp4",
+    "fc_crop_coords": {
+      "w": 478,
+      "h": 372,
+      "x": 0,
+      "y": 186
+    },
+    "facecam_crop": "478:372:0:186",
+    "b_top_pct": 25,
+    "facecam_fit": "stretch"
+  },
+  {
+    "file": "clip_02.mp4",
+    "start_sec": 345,
+    "end_sec": 382,
+    "game": "GTA6",
+    "event_type": "chase",
+    "why": "Player sprints past a burning vehicle wreckage, drops responding police officers, and steals their tactical SUV.",
+    "hook_en": "How To Steal A Police SUV",
+    "title": "GTA 6 Police SUV Ambush Escape",
+    "description": "Jason eliminates responding tactical units on Vice City streets and speeds away in a stolen police SUV.",
+    "speech_language": "none",
+    "music_audible": true,
+    "confidence": 0.92,
+    "selected": true,
+    "layout": "B",
+    "facecam": ""
+  },
+  {
+    "file": "clip_03.mp4",
+    "start_sec": 432,
+    "end_sec": 468,
+    "game": "GTA6",
+    "event_type": "shootout",
+    "why": "Player drifts a convertible onto the beach and drops a tactical officer whose body ragdolls into a flip in the sand.",
+    "hook_en": "GTA 6 Ragdoll Physics Go Crazy",
+    "title": "GTA 6 Beach Drift And Ragdoll Flip",
+    "description": "Jason slides onto the Vice City sands and sends a police officer flying with a shotgun blast.",
+    "speech_language": "none",
+    "music_audible": true,
+    "confidence": 0.94,
+    "selected": true
+  }
+]

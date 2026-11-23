@@ -1124,6 +1124,130 @@ main, .wizard-main{
   border-bottom:1px solid var(--line);
 }
 .section-hdr:first-child{margin-top:0}
+
+/* Persistent Projects Tabs Bar */
+.projects-bar{
+  background:var(--panel);
+  border-bottom:1px solid var(--line);
+  padding:6px 16px;
+  display:flex;
+  align-items:center;
+  position:relative;
+  z-index:90;
+  box-shadow:0 2px 8px rgba(0,0,0,0.25);
+}
+.projects-bar-inner{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  overflow-x:auto;
+  scrollbar-width:thin;
+}
+.projects-bar-inner::-webkit-scrollbar{
+  height:4px;
+}
+.projects-bar-inner::-webkit-scrollbar-thumb{
+  background:var(--line-light);
+  border-radius:2px;
+}
+.projects-tabs-list{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex:1;
+}
+.project-tab{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--field);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:5px 12px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--mut);
+  cursor:pointer;
+  white-space:nowrap;
+  transition:all 0.15s ease;
+  user-select:none;
+}
+.project-tab:hover{
+  background:var(--panel2);
+  color:var(--tx);
+  border-color:var(--line-light);
+}
+.project-tab.active{
+  background:rgba(255,210,63,0.08);
+  border-color:#ffd23f;
+  color:#fff;
+  box-shadow:0 0 10px rgba(255,210,63,0.15);
+}
+.proj-tab-badge{
+  font-size:10px;
+  padding:1px 6px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.08);
+  color:var(--mut);
+  font-weight:500;
+}
+.project-tab.active .proj-tab-badge{
+  background:rgba(255,210,63,0.2);
+  color:#ffd23f;
+}
+.proj-tab-actions{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-left:4px;
+  opacity:0.5;
+}
+.project-tab:hover .proj-tab-actions, .project-tab.active .proj-tab-actions{
+  opacity:1;
+}
+.proj-tab-act-btn{
+  background:none;
+  border:none;
+  padding:2px 4px;
+  border-radius:4px;
+  cursor:pointer;
+  font-size:11px;
+  color:var(--mut);
+  transition:all 0.15s;
+}
+.proj-tab-act-btn:hover{
+  background:rgba(255,255,255,0.1);
+  color:var(--tx);
+}
+.proj-tab-act-btn.del:hover{
+  background:rgba(239,68,68,0.25);
+  color:var(--err);
+}
+.projects-add-btn{
+  padding:5px 12px;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.btn.danger{
+  background:rgba(239,68,68,0.15);
+  border:1px solid rgba(239,68,68,0.4);
+  color:#f87171;
+}
+.btn.danger:hover{
+  background:rgba(239,68,68,0.3);
+  border-color:#ef4444;
+  color:#fff;
+}
+.btn.p.success, .btn.success{
+  background:#10b981;
+  color:#fff;
+  border:1px solid #059669;
+}
+.btn.p.success:hover, .btn.success:hover{
+  background:#059669;
+}
 </style>
 </head>
 <body>
@@ -1156,6 +1280,21 @@ main, .wizard-main{
     <span id="status">Checking backend…</span>
   </div>
 </header>
+
+<!-- Persistent Projects Tabs Bar across all screens -->
+<div class="projects-bar" id="projects-bar">
+  <div class="projects-bar-inner">
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:0.5px">
+      <span>📁 Projects:</span>
+    </div>
+    <div class="projects-tabs-list" id="projects-tabs-list">
+      <!-- Dynamic Project Tabs -->
+    </div>
+    <button class="btn sm projects-add-btn" id="btn-add-project" title="Create a new video project">
+      <span>➕ New Project</span>
+    </button>
+  </div>
+</div>
 
 <div class="app-layout" id="app-layout">
 <main class="wizard-main" id="wizard-main">
@@ -1669,6 +1808,82 @@ main, .wizard-main{
   </div>
 </div>
 
+<!-- Modal: Create New Project -->
+<div class="modal-overlay" id="modal-new-project">
+  <div class="modal-content" style="max-width:500px">
+    <div class="modal-header">
+      <h2 style="margin:0;font-size:15px;font-weight:600">📁 Create New Video Project</h2>
+      <button class="btn sm" id="btn-new-proj-close">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;padding:20px">
+      <div>
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Project Name:</label>
+        <input type="text" id="new-proj-name" placeholder="e.g. GTA 6 Heist Mission 2" style="width:100%;padding:9px 12px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:var(--tx);font-size:13px">
+      </div>
+      <div>
+        <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Source Video:</label>
+        <select id="new-proj-source" style="width:100%;padding:9px 12px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:var(--tx);font-size:13px">
+          <!-- Populated dynamically -->
+        </select>
+        <div style="margin-top:6px;font-size:11px;color:var(--mut)">
+          Select an existing video from <code>input/</code> or upload in Step 1 anytime.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" id="btn-new-proj-cancel">Cancel</button>
+      <button class="btn p" id="btn-new-proj-confirm" style="font-weight:600">🚀 Create & Open Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Delete Project with ZIP Download Option -->
+<div class="modal-overlay" id="modal-delete-project">
+  <div class="modal-content" style="max-width:520px">
+    <div class="modal-header">
+      <h2 style="margin:0;font-size:15px;font-weight:600;color:var(--err)">🗑️ Delete Project</h2>
+      <button class="btn sm" id="btn-del-proj-close">✕</button>
+    </div>
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px;padding:20px">
+      <div style="font-size:13.5px;color:var(--tx)">
+        Are you sure you want to delete <strong id="del-proj-name" style="color:#ffd23f"></strong>?
+      </div>
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:4px">
+        <span style="font-weight:700;font-size:12px;color:var(--err)">⚠️ Permanent Deletion</span>
+        <span style="font-size:11.5px;color:var(--mut)" id="del-proj-stats">All associated clips, subtitle files, and rendered shorts will be deleted.</span>
+      </div>
+      <div style="font-size:12px;color:var(--mut);line-height:1.4">
+        You can download everything in a <strong>ZIP archive</strong> first, or proceed to delete immediately.
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="btn-del-proj-cancel">Cancel</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn danger" id="btn-del-proj-confirm">🗑️ Delete Only</button>
+        <button class="btn p success" id="btn-del-proj-zip" style="font-weight:600;padding:8px 14px">📦 Download All in ZIP & Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Rename Project -->
+<div class="modal-overlay" id="modal-rename-project">
+  <div class="modal-content" style="max-width:440px">
+    <div class="modal-header">
+      <h2 style="margin:0;font-size:15px;font-weight:600">✏️ Rename Project</h2>
+      <button class="btn sm" id="btn-rename-proj-close">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px">
+      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:6px">Project Name:</label>
+      <input type="text" id="rename-proj-input" style="width:100%;padding:9px 12px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:var(--tx);font-size:13px">
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" id="btn-rename-proj-cancel">Cancel</button>
+      <button class="btn p" id="btn-rename-proj-confirm">Save Name</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* Backend API contract:
  GET  /api/health            -> {ok:true}
@@ -1728,6 +1943,10 @@ let availableInputs = [];
 let live = false;
 let currentStep = 1;
 let currentSource = 'input/sample.webm';
+let currentProjectId = 'default';
+let projectsList = [];
+let pendingDeleteProjectId = null;
+let pendingRenameProjectId = null;
 let activeEditingClipIdx = -1;
 let singleRenderOutputs = {};
 let isDraggingAdvDivider = false;
@@ -1760,8 +1979,52 @@ async function saveCurrentConfig(){
   }
 }
 
+/* Route-based Navigation: #/project/:projectId/step/:stepNum */
+function parseRoute(){
+  const hash = window.location.hash || '';
+  const m = hash.match(/^#\/project\/([^/]+)\/step\/([1-4])$/);
+  if(m){
+    return { projectId: decodeURIComponent(m[1]), step: parseInt(m[2], 10) };
+  }
+  return null;
+}
+
+function navigate(projectId, stepNum){
+  const target = `#/project/${encodeURIComponent(projectId)}/step/${stepNum}`;
+  if(window.location.hash !== target){
+    window.location.hash = target;
+  } else {
+    handleRoute();
+  }
+}
+
+let isHandlingRoute = false;
+async function handleRoute(){
+  if(isHandlingRoute) return;
+  isHandlingRoute = true;
+  try {
+    const route = parseRoute();
+    if(!route){
+      navigate(currentProjectId, currentStep);
+      return;
+    }
+    if(route.projectId !== currentProjectId){
+      await switchProject(route.projectId, false);
+    }
+    if(route.step !== currentStep){
+      goToStep(route.step, false);
+    }
+  } catch(e) {
+    console.error('Route handling error:', e);
+  } finally {
+    isHandlingRoute = false;
+  }
+}
+
+window.addEventListener('hashchange', handleRoute);
+
 /* Wizard Navigation */
-function goToStep(s){
+function goToStep(s, updateHash = true){
   currentStep = s;
   document.querySelectorAll('.wizard-step').forEach((el, i) => {
     el.classList.toggle('active', (i + 1) === s);
@@ -1782,18 +2045,259 @@ function goToStep(s){
     loadRenderedOutputs();
   }
   window.scrollTo({top:0, behavior:'smooth'});
+  if(updateHash){
+    navigate(currentProjectId, s);
+  }
 }
 
 document.querySelectorAll('.step-tab').forEach(tab => {
-  tab.onclick = () => goToStep(+tab.dataset.step);
+  tab.onclick = () => goToStep(+tab.dataset.step, true);
 });
 
-$('#nav-step1-next').onclick = () => goToStep(2);
-$('#nav-step2-back').onclick = () => goToStep(1);
-$('#nav-step2-next').onclick = () => goToStep(3);
-$('#nav-step3-back').onclick = () => goToStep(2);
-$('#nav-step3-next').onclick = () => goToStep(4);
-$('#nav-step4-back').onclick = () => goToStep(3);
+$('#nav-step1-next').onclick = () => goToStep(2, true);
+$('#nav-step2-back').onclick = () => goToStep(1, true);
+$('#nav-step2-next').onclick = () => goToStep(3, true);
+$('#nav-step3-back').onclick = () => goToStep(2, true);
+$('#nav-step3-next').onclick = () => goToStep(4, true);
+$('#nav-step4-back').onclick = () => goToStep(3, true);
+
+/* Project Management & Persistent Tabs */
+async function loadProjects(){
+  try {
+    const list = await api('/api/projects');
+    if(Array.isArray(list) && list.length > 0){
+      projectsList = list;
+    } else {
+      projectsList = [{id:'default', name:'GTA 6 - Fighter Jet (Default)', source: currentSource, step:1, clips_count:0, outputs_count:0}];
+    }
+  } catch(e) {
+    projectsList = [{id:'default', name:'GTA 6 - Fighter Jet (Default)', source: currentSource, step:1, clips_count:0, outputs_count:0}];
+  }
+  renderProjectTabs();
+  populateNewProjectSources();
+}
+
+function renderProjectTabs(){
+  const container = $('#projects-tabs-list');
+  if(!container) return;
+  container.innerHTML = '';
+
+  projectsList.forEach(p => {
+    const tab = document.createElement('div');
+    tab.className = 'project-tab' + (p.id === currentProjectId ? ' active' : '');
+    tab.dataset.id = p.id;
+    tab.title = `${p.name} (${p.source || 'No source'})`;
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'proj-tab-name';
+    nameSpan.textContent = p.name;
+
+    const badge = document.createElement('span');
+    badge.className = 'proj-tab-badge';
+    badge.textContent = `${p.clips_count || 0} clips`;
+
+    const actions = document.createElement('div');
+    actions.className = 'proj-tab-actions';
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'proj-tab-act-btn edit-name';
+    renameBtn.title = 'Rename Project';
+    renameBtn.innerHTML = '✏️';
+    renameBtn.onclick = (e) => {
+      e.stopPropagation();
+      openRenameModal(p.id, p.name);
+    };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'proj-tab-act-btn delete';
+    delBtn.title = 'Delete Project';
+    delBtn.innerHTML = '🗑️';
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      openDeleteModal(p.id);
+    };
+
+    actions.append(renameBtn, delBtn);
+    tab.append(nameSpan, badge, actions);
+
+    tab.onclick = () => {
+      if(p.id !== currentProjectId){
+        switchProject(p.id, true);
+      }
+    };
+
+    container.append(tab);
+  });
+}
+
+function populateNewProjectSources(){
+  const sel = $('#new-proj-source');
+  if(!sel) return;
+  sel.innerHTML = '';
+  if(availableInputs && availableInputs.length > 0){
+    availableInputs.forEach(item => {
+      sel.add(new Option(`${item.name} (${item.size_mb} MB)`, item.path));
+    });
+  } else {
+    sel.add(new Option('input/sample.webm', 'input/sample.webm'));
+  }
+}
+
+async function switchProject(projectId, updateRoute = true){
+  currentProjectId = projectId;
+  renderProjectTabs();
+
+  // Find project in projectsList
+  const p = projectsList.find(x => x.id === projectId);
+  if(p && p.source){
+    currentSource = p.source;
+    if($('#source-select')) $('#source-select').value = currentSource;
+    updateSourceBadge();
+    updateSourceFrame();
+  }
+
+  // Load clips & outputs for this project
+  await loadClips();
+  await loadRenderedOutputs();
+
+  // Update summary & queue
+  updateSummary();
+  renderStep4Queue();
+  draw();
+
+  if(updateRoute){
+    navigate(currentProjectId, currentStep);
+  }
+}
+
+/* Modals: New, Delete with ZIP, Rename Project */
+$('#btn-add-project').onclick = () => {
+  $('#modal-new-project').classList.add('open');
+  $('#new-proj-name').value = '';
+  populateNewProjectSources();
+  $('#new-proj-name').focus();
+};
+$('#btn-new-proj-close').onclick = () => $('#modal-new-project').classList.remove('open');
+$('#btn-new-proj-cancel').onclick = () => $('#modal-new-project').classList.remove('open');
+
+$('#btn-new-proj-confirm').onclick = async () => {
+  const name = ($('#new-proj-name').value || '').trim();
+  const source = ($('#new-proj-source').value || '').trim();
+  if(!name){
+    alert('Please enter a project name.');
+    return;
+  }
+  try {
+    const res = await api('/api/projects', {
+      method: 'POST',
+      body: JSON.stringify({ name, source })
+    });
+    if(res.ok && res.project){
+      $('#modal-new-project').classList.remove('open');
+      await loadProjects();
+      await switchProject(res.project.id, false);
+      goToStep(1, true);
+      log(`✓ Created new project: ${res.project.name}`);
+    }
+  } catch(e) {
+    alert('Failed to create project: ' + e.message);
+  }
+};
+
+function openDeleteModal(projectId){
+  pendingDeleteProjectId = projectId;
+  const p = projectsList.find(x => x.id === projectId);
+  if(!p) return;
+  $('#del-proj-name').textContent = p.name;
+  $('#del-proj-stats').textContent = `${p.clips_count || 0} clips, ${p.outputs_count || 0} rendered shorts (${p.total_size_mb || 0} MB).`;
+  $('#modal-delete-project').classList.add('open');
+}
+
+$('#btn-del-proj-close').onclick = () => $('#modal-delete-project').classList.remove('open');
+$('#btn-del-proj-cancel').onclick = () => $('#modal-delete-project').classList.remove('open');
+
+$('#btn-del-proj-confirm').onclick = async () => {
+  if(!pendingDeleteProjectId) return;
+  const idToDelete = pendingDeleteProjectId;
+  try {
+    await api('/api/projects/' + idToDelete, { method: 'DELETE' });
+    $('#modal-delete-project').classList.remove('open');
+    log(`✓ Deleted project: ${idToDelete}`);
+    await loadProjects();
+    if(currentProjectId === idToDelete){
+      const nextProj = projectsList[0] || { id: 'default' };
+      await switchProject(nextProj.id, true);
+    } else {
+      renderProjectTabs();
+    }
+  } catch(e) {
+    alert('Failed to delete project: ' + e.message);
+  }
+};
+
+$('#btn-del-proj-zip').onclick = async () => {
+  if(!pendingDeleteProjectId) return;
+  const idToDelete = pendingDeleteProjectId;
+  const p = projectsList.find(x => x.id === idToDelete);
+  const projName = p ? p.name : idToDelete;
+  
+  // Trigger ZIP download
+  const downloadLink = document.createElement('a');
+  downloadLink.href = `/api/projects/${idToDelete}/zip`;
+  downloadLink.download = `${projName.replace(/[^a-zA-Z0-9_-]/g, '_')}_export.zip`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+
+  log(`📦 Downloading ZIP archive for "${projName}"...`);
+
+  setTimeout(async () => {
+    try {
+      await api('/api/projects/' + idToDelete, { method: 'DELETE' });
+      $('#modal-delete-project').classList.remove('open');
+      log(`✓ Project deleted after ZIP download: ${projName}`);
+      await loadProjects();
+      if(currentProjectId === idToDelete){
+        const nextProj = projectsList[0] || { id: 'default' };
+        await switchProject(nextProj.id, true);
+      } else {
+        renderProjectTabs();
+      }
+    } catch(e) {
+      alert('Failed to delete project: ' + e.message);
+    }
+  }, 1200);
+};
+
+function openRenameModal(projectId, currentName){
+  pendingRenameProjectId = projectId;
+  $('#rename-proj-input').value = currentName || '';
+  $('#modal-rename-project').classList.add('open');
+  $('#rename-proj-input').focus();
+}
+
+$('#btn-rename-proj-close').onclick = () => $('#modal-rename-project').classList.remove('open');
+$('#btn-rename-proj-cancel').onclick = () => $('#modal-rename-project').classList.remove('open');
+
+$('#btn-rename-proj-confirm').onclick = async () => {
+  if(!pendingRenameProjectId) return;
+  const newName = ($('#rename-proj-input').value || '').trim();
+  if(!newName){
+    alert('Please enter a valid project name.');
+    return;
+  }
+  try {
+    await api('/api/projects/' + pendingRenameProjectId, {
+      method: 'PUT',
+      body: JSON.stringify({ name: newName })
+    });
+    $('#modal-rename-project').classList.remove('open');
+    await loadProjects();
+    log(`✓ Renamed project to: ${newName}`);
+  } catch(e) {
+    alert('Failed to rename project: ' + e.message);
+  }
+};
 
 /* Build Advanced Settings Modal from SCHEMA (Professional 2-Column with Draggable Preview) */
 function buildAdvancedSettings(){
@@ -2026,19 +2530,41 @@ function drawAdvPreview(){
   ctx.beginPath();
   ctx.rect(0, 0, W, topH);
   ctx.clip();
-  ctx.fillStyle = '#1e2536';
-  ctx.fillRect(0, 0, W, topH);
 
-  ctx.fillStyle = '#334155';
-  ctx.fillRect(0, 0, W, 1);
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '600 11px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('FACECAM SLOT', W / 2, topH / 2 - 8);
-  ctx.fillStyle = '#64748b';
-  ctx.font = '500 10px system-ui, sans-serif';
-  ctx.fillText(`${topPct}% of height`, W / 2, topH / 2 + 10);
+  const fcImgEl = $('#modal-fc-img');
+  if(fcImgEl && fcImgEl.complete && fcImgEl.naturalWidth){
+    const fitMode = V.B_FACE_FIT || 'cover';
+    const sw = fcImgEl.naturalWidth;
+    const sh = fcImgEl.naturalHeight;
+    if(fitMode === 'contain'){
+      const scale = Math.min(W / sw, topH / sh);
+      const dw = sw * scale;
+      const dh = sh * scale;
+      const dx = (W - dw) / 2;
+      const dy = (topH - dh) / 2;
+      ctx.fillStyle = '#0d0e12';
+      ctx.fillRect(0, 0, W, topH);
+      ctx.drawImage(fcImgEl, 0, 0, sw, sh, dx, dy, dw, dh);
+    } else {
+      const scale = Math.max(W / sw, topH / sh);
+      const dw = sw * scale;
+      const dh = sh * scale;
+      const dx = (W - dw) / 2;
+      const dy = (dh > topH) ? 0 : (topH - dh) / 2;
+      ctx.drawImage(fcImgEl, 0, 0, sw, sh, dx, dy, dw, dh);
+    }
+  } else {
+    ctx.fillStyle = '#1e2536';
+    ctx.fillRect(0, 0, W, topH);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('FACECAM SLOT', W / 2, topH / 2 - 8);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '500 10px system-ui, sans-serif';
+    ctx.fillText(`${topPct}% (${Math.round(1920 * topPct / 100)}px)`, W / 2, topH / 2 + 10);
+  }
   ctx.restore();
 
   // 2. Draw Divider Line
@@ -2051,23 +2577,24 @@ function drawAdvPreview(){
   ctx.rect(0, topH, W, botH);
   ctx.clip();
 
-  if(sourceImg && sourceImg.complete && sourceImg.naturalWidth){
-    const imgRatio = sourceImg.naturalWidth / sourceImg.naturalHeight;
+  const img = (typeof frameImg !== 'undefined' && frameImg) || $('#src-frame-img');
+  if(img && img.complete && img.naturalWidth){
+    const imgRatio = img.naturalWidth / img.naturalHeight;
     const slotRatio = W / botH;
     let sx, sy, sw, sh;
     if(imgRatio > slotRatio){
-      sh = sourceImg.naturalHeight;
+      sh = img.naturalHeight;
       sw = sh * slotRatio;
-      sx = (sourceImg.naturalWidth - sw) / 2;
+      sx = (img.naturalWidth - sw) / 2;
       sy = 0;
     } else {
-      sw = sourceImg.naturalWidth;
+      sw = img.naturalWidth;
       sh = sw / slotRatio;
       sx = 0;
-      sy = (sourceImg.naturalHeight - sh) / 2;
+      sy = (img.naturalHeight - sh) / 2;
     }
-    ctx.drawImage(sourceImg, sx, sy, sw, sh, 0, topH, W, botH);
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.drawImage(img, sx, sy, sw, sh, 0, topH, W, botH);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.fillRect(0, topH, W, botH);
   } else {
     ctx.fillStyle = '#111622';
@@ -2085,15 +2612,15 @@ function drawAdvPreview(){
 
   // 4. Draw Headline Hook Text
   const scale = W / 1080;
-  const fontSize = Math.max(12, Math.round((+V.MEME_SIZE || 120) * scale));
+  const fontSize = Math.max(12, Math.round((+V.MEME_SIZE || 120) * scale * 1.4));
   const posYPct = +V.MEME_Y_PCT || 15;
-  const posY = Math.round(H * posYPct / 100);
-  const borderW = Math.max(1.5, Math.round((+V.MEME_BORDER || 10) * scale));
+  const posY = topH + Math.round(botH * posYPct / 100);
+  const borderW = Math.max(1.5, Math.round((+V.MEME_BORDER || 10) * scale * 1.4));
 
   ctx.save();
   ctx.font = `900 ${fontSize}px "Anton", Impact, sans-serif`;
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'top';
+  ctx.textBaseline = 'middle';
   ctx.lineWidth = borderW * 2;
   ctx.strokeStyle = '#000000';
   ctx.lineJoin = 'miter';
@@ -2110,14 +2637,14 @@ function drawAdvPreview(){
   const capUpper = (V.CAP_UPPER === 'yes');
   let capText = capUpper ? "WATCH THIS PLAY" : "Watch this play";
   ctx.save();
-  ctx.font = `800 10px system-ui, sans-serif`;
+  ctx.font = `800 11px system-ui, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillStyle = capHl;
   ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.strokeText(capText, W / 2, H - 24);
-  ctx.fillText(capText, W / 2, H - 24);
+  ctx.lineWidth = 2.5;
+  ctx.strokeText(capText, W / 2, H - 22);
+  ctx.fillText(capText, W / 2, H - 22);
   ctx.restore();
 }
 
@@ -2176,6 +2703,7 @@ if($('#quick-cap-style')) $('#quick-cap-style').onchange = e => {
 if($('#quick-cap-upper-check')) $('#quick-cap-upper-check').onchange = e => {
   V.CAP_UPPER = e.target.checked ? 'yes' : 'no';
   syncInputs();
+  draw();
   drawAdvPreview();
 };
 if($('#quick-text-size')) $('#quick-text-size').oninput = e => {
@@ -2230,8 +2758,10 @@ function draw(){
   let h = '';
   const firstSelected = picked()[0];
   const hookText = (firstSelected && firstSelected.hook) ? firstSelected.hook.toUpperCase() : 'BRO EJECTED AT LAST SECOND';
-  const capColor = V.CAP_HL || '#ffe600';
-  const capWord = (V.CAP_UPPER === 'yes') ? `WATCH THIS <u style="color:${capColor}">PLAY</u>` : `watch this <u style="color:${capColor}">play</u>`;
+  const capColor = V.CAP_HL ? V.CAP_HL.replace('0x', '#') : '#ffe600';
+  const capWord = (V.CAP_UPPER === 'yes')
+    ? `WATCH THIS <u style="color:${capColor} !important;-webkit-text-fill-color:${capColor} !important">PLAY</u>`
+    : `watch this <u style="color:${capColor} !important;-webkit-text-fill-color:${capColor} !important">play</u>`;
 
   if(L === 'B'){
     const t = Math.round(H * g('B_TOP_PCT') / 100);
@@ -2427,10 +2957,20 @@ async function loadSourceInputs(){
   }
 }
 
-$('#source-select').onchange = () => {
+$('#source-select').onchange = async () => {
   currentSource = $('#source-select').value;
   updateSourceBadge();
   updateSourceFrame();
+  if(live && currentProjectId){
+    try {
+      await api('/api/projects/' + currentProjectId, {
+        method: 'PUT',
+        body: JSON.stringify({ source: currentSource })
+      });
+      const p = projectsList.find(x => x.id === currentProjectId);
+      if(p) p.source = currentSource;
+    } catch(e){}
+  }
 };
 
 function updateSourceBadge(){
@@ -2468,6 +3008,16 @@ async function handleFileUpload(file){
       $('#source-select').value = data.path;
       updateSourceBadge();
       updateSourceFrame();
+      if(live && currentProjectId){
+        try {
+          await api('/api/projects/' + currentProjectId, {
+            method: 'PUT',
+            body: JSON.stringify({ source: data.path })
+          });
+          const p = projectsList.find(x => x.id === currentProjectId);
+          if(p) p.source = data.path;
+        } catch(e){}
+      }
     }
   }catch(e){ log('Upload failed: ' + e.message); }
 }
@@ -2579,10 +3129,22 @@ const DEMO=[
 ];
 
 async function loadClips(){
-  try{ clips = await api('/api/clips'); }
+  try{ clips = await api('/api/clips?project=' + encodeURIComponent(currentProjectId)); }
   catch{ clips = live ? [] : DEMO; }
   clips.forEach(c => { if(c.selected === undefined) c.selected = true; });
   renderClips();
+}
+
+async function saveClips(){
+  if(!live) return;
+  try{
+    await api('/api/clips?project=' + encodeURIComponent(currentProjectId), {
+      method: 'POST',
+      body: JSON.stringify(clips)
+    });
+  }catch(e){
+    console.warn('Failed to save clips:', e);
+  }
 }
 
 /* Step 4: Clips Queue & Single Render / Edit */
@@ -3679,9 +4241,7 @@ $('#btn-clip-edit-save').onclick = async () => {
   applyModalEditsToClip();
   const c = clips[activeEditingClipIdx];
 
-  if(live){
-    try{ await api('/api/clips', {method:'POST', body:JSON.stringify(clips)}); }catch{}
-  }
+  await saveClips();
 
   $('#clip-edit-modal').classList.remove('open');
   renderClips();
@@ -3694,9 +4254,7 @@ $('#btn-clip-edit-render').onclick = async () => {
   applyModalEditsToClip();
   const idx = activeEditingClipIdx;
 
-  if(live){
-    try{ await api('/api/clips', {method:'POST', body:JSON.stringify(clips)}); }catch{}
-  }
+  await saveClips();
 
   $('#clip-edit-modal').classList.remove('open');
   renderClips();
@@ -3707,6 +4265,7 @@ $('#btn-clip-edit-render').onclick = async () => {
 
 /* Background Job Handling */
 async function job(body, label){
+  body.project = body.project || currentProjectId;
   if(typeof toggleLogsPanel === 'function' && logsPanel && logsPanel.classList.contains('collapsed')){
     toggleLogsPanel(true);
   }
@@ -3725,7 +4284,7 @@ async function job(body, label){
           log('✓ Finished: ' + (j.outputs || []).join(', '));
           if(body.type === 'find_clips'){
             await loadClips();
-            goToStep(2);
+            goToStep(2, true);
           } else if(body.type === 'render'){
             displayRenderGallery(j.outputs || []);
           }
@@ -3748,9 +4307,10 @@ let renderedOutputsList = [];
 
 async function loadRenderedOutputs(){
   try{
-    const res = await api('/api/outputs');
+    const res = await api('/api/outputs?project=' + encodeURIComponent(currentProjectId));
     if(Array.isArray(res)){
       renderedOutputsList = res;
+      singleRenderOutputs = {};
       res.forEach(item => {
         const filename = typeof item === 'string' ? item.split('/').pop() : item.name;
         const stem = filename.replace(/\.(mp4|webm|mkv)$/i, '').replace(/(_B|_A)$/i, '');
@@ -3764,6 +4324,7 @@ async function loadRenderedOutputs(){
         }
       });
       renderStep4Queue();
+      renderGalleryGrid(res);
     }
   }catch(e){
     console.error('Failed to load rendered outputs:', e);
@@ -3971,8 +4532,19 @@ async function init(){
   syncInputs();
   setLayout(V.LAYOUT || 'B');
   await loadSourceInputs();
-  await loadClips();
-  await loadRenderedOutputs();
+  await loadProjects();
+
+  // Parse initial route from URL hash if present
+  const initialRoute = parseRoute();
+  if(initialRoute){
+    currentProjectId = initialRoute.projectId;
+    currentStep = initialRoute.step;
+  }
+
+  await switchProject(currentProjectId, false);
+  goToStep(currentStep, false);
+  navigate(currentProjectId, currentStep);
+
   syncShortsFrameFromV();
   draw();
   drawAdvPreview();

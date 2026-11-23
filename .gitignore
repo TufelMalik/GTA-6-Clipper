@@ -29,6 +29,19 @@ out/*.ass
 out/*.words.json
 !out/.gitkeep
 
+# Multi-project Isolated Directories (ignore large video binaries)
+projects/**/out/*.mp4
+projects/**/out/*.webm
+projects/**/out/*.mkv
+projects/**/out/*.mov
+projects/**/out/*.jpg
+projects/**/out/*.jpeg
+projects/**/out/*.png
+projects/**/out/*.ass
+projects/**/out/*.words.json
+projects/**/clips/*.mp4
+projects/**/clips/*.webm
+
 # System & Temporary
 .DS_Store
 Thumbs.db
