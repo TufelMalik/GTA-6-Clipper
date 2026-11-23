@@ -1,8 +1,8 @@
 [
   {
     "file": "clip_01.mp4",
-    "start_sec": 252.0,
-    "end_sec": 289.0,
+    "start_sec": 252,
+    "end_sec": 289,
     "game": "GTA6",
     "event_type": "stunt",
     "why": "Player ejects from failing fighter jet and parachutes over luxury resort pool as the jet crashes below.",
@@ -11,12 +11,13 @@
     "description": "Escaping a damaged military jet between Vice City skyscrapers and parachuting over a luxury resort pool.",
     "speech_language": "none",
     "music_audible": true,
-    "confidence": 0.95
+    "confidence": 0.95,
+    "selected": true
   },
   {
     "file": "clip_02.mp4",
-    "start_sec": 345.0,
-    "end_sec": 382.0,
+    "start_sec": 345,
+    "end_sec": 382,
     "game": "GTA6",
     "event_type": "chase",
     "why": "Player sprints past burning vehicle wreckage, drops responding police officers, and steals their tactical SUV.",
@@ -25,12 +26,25 @@
     "description": "Jason eliminates responding tactical units on Vice City streets and speeds away in a stolen police SUV.",
     "speech_language": "none",
     "music_audible": true,
-    "confidence": 0.92
+    "confidence": 0.92,
+    "selected": true,
+    "layout": "A",
+    "b_top_pct": 31,
+    "gameplay_x": 833,
+    "text_font": "Anton",
+    "text_color": "#ffffff",
+    "text_size": 60,
+    "text_pos": 15,
+    "facecam": "",
+    "facecam_fit": "cover",
+    "fc_ratio": "slot",
+    "fc_crop_coords": null,
+    "facecam_crop": ""
   },
   {
     "file": "clip_03.mp4",
-    "start_sec": 432.0,
-    "end_sec": 468.0,
+    "start_sec": 432,
+    "end_sec": 468,
     "game": "GTA6",
     "event_type": "shootout",
     "why": "Player drifts a convertible onto the beach and drops a tactical officer whose body ragdolls into a flip in the sand.",
@@ -39,6 +53,24 @@
     "description": "Jason slides onto the Vice City sands and sends a police officer flying with a shotgun blast.",
     "speech_language": "none",
     "music_audible": true,
-    "confidence": 0.94
+    "confidence": 0.94,
+    "selected": true,
+    "layout": "B",
+    "b_top_pct": 37,
+    "gameplay_x": 833,
+    "text_font": "Impact",
+    "text_color": "#ffffff",
+    "text_size": 45,
+    "text_pos": 10,
+    "facecam": "input/WhatsApp_Video_2026-11-22_at_10.47.27_AM.mp4",
+    "facecam_fit": "cover",
+    "fc_ratio": "slot",
+    "fc_crop_coords": {
+      "w": 452,
+      "h": 296,
+      "x": 24,
+      "y": 228
+    },
+    "facecam_crop": "452:296:24:228"
   }
 ]

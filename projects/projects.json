@@ -1,10 +1,11 @@
 [
   {
     "id": "default",
-    "name": "GTA 6 - Fighter Jet (Default)",
-    "source": "input/sample.webm",
-    "created_at": 1795422258.4807913,
-    "updated_at": 1795422258.4807913,
-    "step": 4
+    "name": "Main Stream Project",
+    "source": "input/GTA_6_I_Stole_a_Fighter_Jet___the_ENTIRE_ARMY_Came_After_Me___PS5_4K__IeI9gjKU2o0_.webm",
+    "created_at": 1795420000.0,
+    "updated_at": 1795428403.4840755,
+    "step": 3,
+    "clips_count": 3
   }
 ]
