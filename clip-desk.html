@@ -2447,7 +2447,7 @@ function buildAdvancedSettings(){
       <div class="adv-phone-wrap">
         <div class="modal-phone-preview" id="adv-phone-preview" style="width:200px;height:355px;position:relative;border-radius:18px;overflow:hidden;background:#0d0e12;border:2px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,0.7);touch-action:none">
           <canvas id="adv-phone-canvas" width="200" height="355" style="display:block;width:100%;height:100%"></canvas>
-          <div class="modal-phone-divider" id="adv-phone-divider" style="position:absolute;left:0;right:0;height:16px;margin-top:-8px;cursor:row-resize;z-index:10;display:flex;align-items:center;justify-content:center;touch-action:none" title="Drag to adjust default facecam height">
+          <div class="modal-phone-divider" id="adv-phone-divider" style="position:absolute;left:0;right:0;top:35%;height:22px;margin-top:-11px;cursor:row-resize;z-index:10;display:flex;align-items:center;justify-content:center;touch-action:none" title="Drag to adjust default facecam height">
             <div class="divider-pill" id="adv-divider-pill" style="pointer-events:none">
               <span id="adv-divider-text">35% / 65%</span>
             </div>
@@ -2468,6 +2468,26 @@ function buildAdvancedSettings(){
   drawAdvPreview();
 }
 
+function handleAdvPointer(e){
+  const prevEl = $('#adv-phone-preview');
+  if(!prevEl) return;
+  const rect = prevEl.getBoundingClientRect();
+  if(rect.height > 0){
+    const relY = e.clientY - rect.top;
+    const pct = Math.max(15, Math.min(65, Math.round((relY / rect.height) * 100)));
+    V.B_TOP_PCT = pct;
+    const inp = $('#f_B_TOP_PCT');
+    if(inp){
+      inp.value = pct;
+      const o = inp.nextElementSibling;
+      if(o && o.tagName === 'OUTPUT') o.textContent = pct + '%';
+    }
+    syncQuickControls();
+    draw();
+    drawAdvPreview();
+  }
+}
+
 function initAdvPhoneEvents(){
   const divEl = $('#adv-phone-divider');
   const prevEl = $('#adv-phone-preview');
@@ -2480,10 +2500,24 @@ function initAdvPhoneEvents(){
     e.stopPropagation();
   };
 
+  prevEl.onpointerdown = e => {
+    isDraggingAdvDivider = true;
+    divEl.classList.add('active');
+    handleAdvPointer(e);
+    divEl.setPointerCapture(e.pointerId);
+  };
+
+  divEl.onpointermove = e => {
+    if(isDraggingAdvDivider){
+      handleAdvPointer(e);
+    }
+  };
+
   divEl.onpointerup = e => {
     if(isDraggingAdvDivider){
       isDraggingAdvDivider = false;
       divEl.classList.remove('active');
+      drawAdvPreview();
       saveCurrentConfig();
     }
   };
@@ -2492,6 +2526,7 @@ function initAdvPhoneEvents(){
     if(isDraggingAdvDivider){
       isDraggingAdvDivider = false;
       divEl.classList.remove('active');
+      drawAdvPreview();
     }
   };
 }
@@ -2513,7 +2548,7 @@ function drawAdvPreview(){
 
   // Update DOM divider position and stats
   const divEl = $('#adv-phone-divider');
-  if(divEl && !isDraggingAdvDivider){
+  if(divEl){
     divEl.style.top = topPct + '%';
   }
   const textEl = $('#adv-divider-text');
@@ -4012,24 +4047,7 @@ document.querySelectorAll('#modal-fc-crop-box .fc-crop-handle').forEach(h => {
 
 window.addEventListener('pointermove', e => {
   if(isDraggingAdvDivider){
-    const prevEl = $('#adv-phone-preview');
-    if(prevEl){
-      const rect = prevEl.getBoundingClientRect();
-      if(rect.height > 0){
-        const relY = e.clientY - rect.top;
-        const pct = Math.max(15, Math.min(65, Math.round((relY / rect.height) * 100)));
-        V.B_TOP_PCT = pct;
-        const inp = $('#f_B_TOP_PCT');
-        if(inp){
-          inp.value = pct;
-          const o = inp.nextElementSibling;
-          if(o && o.tagName === 'OUTPUT') o.textContent = pct + '%';
-        }
-        syncQuickControls();
-        draw();
-        drawAdvPreview();
-      }
-    }
+    handleAdvPointer(e);
     return;
   }
 
@@ -4147,6 +4165,7 @@ window.addEventListener('pointerup', () => {
     isDraggingAdvDivider = false;
     const divEl = $('#adv-phone-divider');
     if(divEl) divEl.classList.remove('active');
+    drawAdvPreview();
     saveCurrentConfig();
   }
   if(isDraggingModalDivider){
