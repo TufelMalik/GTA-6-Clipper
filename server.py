@@ -469,6 +469,13 @@ def run_job_thread(job_id: str, job_type: str, payload: Dict[str, Any]):
                         with jobs_lock:
                             job["log"].append(f"Applying facecam framing crop: {clean_crop}")
 
+                # Optional facecam scaling fit mode (stretch, fit/contain, cover/fill)
+                facecam_fit = (item.get("facecam_fit") or payload.get("facecam_fit") or "").strip().lower()
+                if facecam_fit in ("cover", "fit", "stretch", "contain", "fill"):
+                    render_cmd.extend(["-m", facecam_fit])
+                    with jobs_lock:
+                        job["log"].append(f"Applying facecam scaling mode: {facecam_fit}")
+
                 ret = run_command_logged(render_cmd, job)
                 if ret != 0 or not (BASE_DIR / out_mp4).exists():
                     with jobs_lock:

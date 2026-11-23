@@ -4,11 +4,11 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HERE/config.env"
 
-IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN="" FC_CROP=""
-while getopts "i:s:e:l:o:a:t:f:c:" o; do
+IN="" S="" E="" L="A" OUT="" ASS="" HOOK="" FC_IN="" FC_CROP="" FC_FIT=""
+while getopts "i:s:e:l:o:a:t:f:c:m:" o; do
   case $o in i) IN=$OPTARG;; s) S=$OPTARG;; e) E=$OPTARG;; l) L=$OPTARG;;
              o) OUT=$OPTARG;; a) ASS=$OPTARG;; t) HOOK=$OPTARG;; f) FC_IN=$OPTARG;;
-             c) FC_CROP=$OPTARG;; *) exit 1;; esac
+             c) FC_CROP=$OPTARG;; m) FC_FIT=$OPTARG;; *) exit 1;; esac
 done
 [[ -z $IN || -z $S || -z $E || -z $OUT ]] && { sed -n '2p' "$0"; exit 1; }
 
@@ -77,10 +77,13 @@ if [[ $L == A ]]; then
 else
   TOP=$(even $(( OUT_H * B_TOP_PCT / 100 ))); BOT=$(( OUT_H - TOP ))
   read cw ch cx <<< "$(crop_for "$BOT" "${B_MAIN_X:-auto}")"
-  if [[ $B_FACE_FIT == cover ]]; then
-    TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=increase,crop=${OUT_W}:${TOP}"
-  else
+  EFFECTIVE_FIT="${FC_FIT:-$B_FACE_FIT}"
+  if [[ $EFFECTIVE_FIT == stretch || $EFFECTIVE_FIT == fill ]]; then
+    TOPF="scale=${OUT_W}:${TOP}"
+  elif [[ $EFFECTIVE_FIT == fit || $EFFECTIVE_FIT == contain ]]; then
     TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=decrease,pad=${OUT_W}:${TOP}:(ow-iw)/2:(oh-ih)/2:black"
+  else
+    TOPF="scale=${OUT_W}:${TOP}:force_original_aspect_ratio=increase,crop=${OUT_W}:${TOP}"
   fi
   if [[ -n $FC_IN ]]; then
     if [[ -n $FC_CROP_FILTER ]]; then

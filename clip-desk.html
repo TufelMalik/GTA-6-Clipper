@@ -523,23 +523,36 @@ main{
   flex-direction:column;
   gap:8px;
 }
+.fc-monitor-outer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#090a0d;
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px;
+  min-height:220px;
+  max-height:360px;
+  overflow:hidden;
+}
 .fc-monitor{
   position:relative;
-  width:100%;
-  max-width:500px;
-  aspect-ratio:16/9;
-  background:#0a0b0d;
-  border:1px solid var(--line);
-  border-radius:6px;
+  display:inline-block;
+  background:#000;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:4px;
   overflow:hidden;
   user-select:none;
-  margin:0 auto;
+  max-width:100%;
+  max-height:340px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.6);
 }
 .fc-monitor-img{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
+  display:block;
+  max-width:100%;
+  max-height:340px;
+  width:auto;
+  height:auto;
   object-fit:contain;
   pointer-events:none;
 }
@@ -587,6 +600,68 @@ main{
   cursor:nwse-resize;
   box-shadow:0 1px 4px rgba(0,0,0,0.6);
 }
+
+/* Modal 2-column layout for Framing & Live Preview */
+.modal-fc-grid{
+  display:grid;
+  grid-template-columns:1fr 240px;
+  gap:16px;
+  align-items:start;
+}
+@media (max-width:820px){
+  .modal-fc-grid{grid-template-columns:1fr}
+}
+.modal-fc-left{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  min-width:0;
+}
+.modal-fc-right{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  padding:12px;
+}
+.modal-phone-preview{
+  width:216px;
+  height:384px;
+  background:#000;
+  border:3px solid #333842;
+  border-radius:18px;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 10px 28px rgba(0,0,0,0.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.modal-phone-preview canvas{
+  width:100%;
+  height:100%;
+  display:block;
+}
+.ratio-pills{
+  display:flex;
+  gap:4px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.ratio-pill{
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--mut);
+  border-radius:14px;
+  padding:3px 9px;
+  font-size:11px;
+  cursor:pointer;
+  transition:all 0.15s ease;
+}
+.ratio-pill:hover{color:var(--tx);border-color:var(--line-light)}
+.ratio-pill.active{background:var(--panel3);color:#fff;border-color:var(--acc);font-weight:600}
 
 /* Live Terminal Log */
 .log-box{
@@ -644,9 +719,9 @@ main{
   background:var(--panel);
   border:1px solid var(--line);
   border-radius:var(--r-lg);
-  max-width:680px;
-  width:100%;
-  max-height:90vh;
+  max-width:940px;
+  width:95%;
+  max-height:92vh;
   display:flex;
   flex-direction:column;
   box-shadow:var(--shadow);
@@ -962,7 +1037,7 @@ main{
 
 <!-- Edit Clip & Clip-Specific Facecam Framing Modal -->
 <div class="modal-overlay" id="clip-edit-modal">
-  <div class="modal-content" style="max-width:620px">
+  <div class="modal-content" style="max-width:960px">
     <div class="modal-header">
       <h2 style="margin:0;font-size:15px;font-weight:600" id="clip-edit-title">✏️ Edit Clip & Facecam</h2>
       <button class="btn sm" id="btn-clip-edit-close">✕</button>
@@ -1010,48 +1085,95 @@ main{
         </div>
 
         <!-- Facecam Selector & Source Framing Panel -->
-        <div id="modal-fc-details" style="display:none;display:flex;flex-direction:column;gap:12px">
+        <div id="modal-fc-details" style="display:none;flex-direction:column;gap:12px">
           <div style="display:flex;gap:8px;align-items:center">
             <select id="modal-fc-select" style="flex:1;padding:8px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:#fff;font-size:12px"></select>
             <input type="file" id="modal-fc-file-input" accept="video/*" style="display:none">
             <button type="button" class="btn sm p" onclick="$('#modal-fc-file-input').click()">+ Upload Video</button>
           </div>
 
-          <!-- Real Image of Uploaded Facecam & Framing System -->
+          <!-- Real Image of Uploaded Facecam & Framing System with Live Preview -->
           <div class="fc-framing-box-wrap" id="modal-fc-monitor-wrap" style="display:none">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
-              <span style="font-size:12px;font-weight:600">🎯 Facecam Source Framing</span>
-              <div class="presets-bar">
-                <span style="font-size:10px;color:var(--mut)">Framing Presets:</span>
-                <button type="button" class="btn sm" id="modal-fc-preset-left">◀ Left</button>
-                <button type="button" class="btn sm" id="modal-fc-preset-center">⯀ Center</button>
-                <button type="button" class="btn sm" id="modal-fc-preset-right">▶ Right</button>
-                <button type="button" class="btn sm" id="modal-fc-preset-face">👤 Face Crop</button>
-                <button type="button" class="btn sm" id="modal-fc-preset-wide">↔ Wide</button>
-              </div>
-            </div>
-            <p style="font-size:11px;color:var(--mut);margin:0 0 8px">
-              Drag the <b style="color:#f59e0b">gold framing box</b> over the streamer's face. Drag the bottom-right corner circle to resize.
-            </p>
-
-            <div class="fc-monitor" id="modal-fc-monitor">
-              <img id="modal-fc-frame-img" class="fc-monitor-img" alt="Facecam Real Frame">
-              <div class="src-placeholder" id="modal-fc-placeholder">
-                <span>📹 Loading real facecam frame...</span>
-              </div>
-              <!-- Interactive Draggable & Resizable Facecam Framing Box -->
-              <div class="fc-crop-box" id="modal-fc-crop-box">
-                <div class="fc-crop-badge">
-                  <span>🎯 FACECAM CROP</span>
-                  <span class="fc-crop-sub" id="modal-fc-crop-sub">Framed</span>
+            <div class="modal-fc-grid">
+              
+              <!-- Left Column: Framing Controls & Monitor -->
+              <div class="modal-fc-left">
+                <!-- Aspect Ratio Controls -->
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:600;color:var(--tx)">Frame Ratio:</span>
+                  <div class="ratio-pills">
+                    <button type="button" class="ratio-pill active" id="modal-ratio-free" onclick="setModalCropRatio('free')">Free (Custom)</button>
+                    <button type="button" class="ratio-pill" id="modal-ratio-slot" onclick="setModalCropRatio('slot')">Match Slot</button>
+                    <button type="button" class="ratio-pill" id="modal-ratio-1-1" onclick="setModalCropRatio('1:1')">1:1 Square</button>
+                    <button type="button" class="ratio-pill" id="modal-ratio-4-3" onclick="setModalCropRatio('4:3')">4:3</button>
+                    <button type="button" class="ratio-pill" id="modal-ratio-16-9" onclick="setModalCropRatio('16:9')">16:9</button>
+                    <button type="button" class="ratio-pill" id="modal-ratio-9-16" onclick="setModalCropRatio('9:16')">9:16</button>
+                  </div>
                 </div>
-                <div class="fc-crop-handle" id="modal-fc-crop-handle" title="Drag to resize framing"></div>
-              </div>
-            </div>
 
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:var(--mut)">
-              <span id="modal-fc-coords-text">Crop: Center</span>
-              <span id="modal-fc-res-text">Source: Loading...</span>
+                <!-- Positioning Presets -->
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:600;color:var(--tx)">Position:</span>
+                  <div class="presets-bar" style="margin:0">
+                    <button type="button" class="btn sm" id="modal-fc-preset-left">◀ Left</button>
+                    <button type="button" class="btn sm" id="modal-fc-preset-center">⯀ Center</button>
+                    <button type="button" class="btn sm" id="modal-fc-preset-right">▶ Right</button>
+                    <button type="button" class="btn sm" id="modal-fc-preset-face">👤 Face Crop</button>
+                    <button type="button" class="btn sm" id="modal-fc-preset-wide">↔ Wide</button>
+                  </div>
+                </div>
+
+                <!-- Framing Monitor tightly wrapped around image -->
+                <div class="fc-monitor-outer">
+                  <div class="fc-monitor" id="modal-fc-monitor">
+                    <img id="modal-fc-frame-img" class="fc-monitor-img" alt="Facecam Real Frame">
+                    <div class="src-placeholder" id="modal-fc-placeholder">
+                      <span>📹 Loading real facecam frame...</span>
+                    </div>
+                    <!-- Interactive Draggable & Resizable Facecam Framing Box -->
+                    <div class="fc-crop-box" id="modal-fc-crop-box">
+                      <div class="fc-crop-badge">
+                        <span>🎯 FACECAM CROP</span>
+                        <span class="fc-crop-sub" id="modal-fc-crop-sub">Framed</span>
+                      </div>
+                      <div class="fc-crop-handle" id="modal-fc-crop-handle" title="Drag to resize framing"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--mut)">
+                  <span id="modal-fc-coords-text">Crop: Center</span>
+                  <span id="modal-fc-res-text">Source: Loading...</span>
+                </div>
+
+                <!-- Stretch or Fit Mode Selector (User Requirement) -->
+                <div style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:4px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <label style="font-size:12px;font-weight:600;margin:0">Placement in Short:</label>
+                    <span style="font-size:11px;color:var(--acc)" id="modal-fit-mode-desc">Cover (fills slot, no black bars)</span>
+                  </div>
+                  <div class="mode-pills" style="margin:0;gap:6px">
+                    <button type="button" class="mode-pill active" id="modal-fit-cover" onclick="setModalFitMode('cover')">🖼️ Cover (Fill / Crop)</button>
+                    <button type="button" class="mode-pill" id="modal-fit-fit" onclick="setModalFitMode('fit')">🔲 Fit (Keep Ratio / Bars)</button>
+                    <button type="button" class="mode-pill" id="modal-fit-stretch" onclick="setModalFitMode('stretch')">↔ Stretch (Fill Slot)</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Column: Live Short Preview (User Requirement) -->
+              <div class="modal-fc-right">
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:8px">
+                  <span style="font-size:12px;font-weight:600">📱 Live Output Preview</span>
+                  <span style="font-size:10px;background:rgba(16,185,129,0.15);color:var(--ok);padding:2px 6px;border-radius:4px;font-weight:600">● Live 9:16</span>
+                </div>
+                <div class="modal-phone-preview" id="modal-phone-preview">
+                  <canvas id="modal-live-preview-canvas" width="270" height="480"></canvas>
+                </div>
+                <span style="font-size:11px;color:var(--mut);text-align:center;margin-top:8px">
+                  Updates in real-time as you drag the crop or change fit
+                </span>
+              </div>
+
             </div>
           </div>
         </div>
@@ -1679,7 +1801,8 @@ function renderStep4Queue(){
     if(c.facecam){
       const fcFilename = c.facecam.split('/').pop();
       const cropText = c.facecam_crop ? ` [Crop: ${c.facecam_crop}]` : ' [Framed]';
-      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📹 Facecam: ${fcFilename}${cropText}</span>`;
+      const fitText = c.facecam_fit ? ` [Fit: ${c.facecam_fit}]` : ' [Fit: cover]';
+      fcBadgeHtml = `<span class="clip-tag" style="background:#064e3b;color:#a7f3d0">📹 Facecam: ${fcFilename}${cropText}${fitText}</span>`;
     } else {
       fcBadgeHtml = `<span class="clip-tag" style="color:var(--mut)">📹 No Facecam (Stream Only)</span>`;
     }
@@ -1739,6 +1862,7 @@ async function renderSingleClip(idx){
     layout: c.layout || L,
     facecam: c.facecam || '',
     facecam_crop: c.facecam_crop || '',
+    facecam_fit: c.facecam_fit || 'cover',
     start_sec: c.start_sec,
     end_sec: c.end_sec
   };
@@ -1796,6 +1920,15 @@ function openEditClipModal(idx){
   modalFcActive = !!c.facecam;
   modalFcPath = c.facecam || '';
   modalFcCropCoords = c.fc_crop_coords || null;
+  modalFcFit = c.facecam_fit || 'cover';
+  setModalFitMode(modalFcFit);
+  setModalCropRatio('free');
+
+  $('#edit-clip-hook').oninput = () => updateModalLivePreview();
+  $('#edit-clip-layout').onchange = () => {
+    updateModalLivePreview();
+    if(modalActiveRatio === 'slot') setModalCropRatio('slot');
+  };
 
   if(modalFcPath){
     fcSel.value = modalFcPath;
@@ -1827,6 +1960,7 @@ function updateModalFacecamView(){
       $('#modal-fc-monitor-wrap').style.display = 'none';
     }
   }
+  updateModalLivePreview();
 }
 
 $('#modal-btn-fc-none').onclick = () => {
@@ -1885,6 +2019,87 @@ const fcCropBox = $('#modal-fc-crop-box');
 const fcCropSub = $('#modal-fc-crop-sub');
 const fcCropHandle = $('#modal-fc-crop-handle');
 
+let modalFcFit = 'cover';
+let modalActiveRatio = 'free';
+let modalRatioVal = null;
+
+function setModalCropRatio(ratio){
+  modalActiveRatio = ratio;
+  ['free', 'slot', '1-1', '4-3', '16-9', '9-16'].forEach(id => {
+    const el = $('#modal-ratio-' + id);
+    if(el) el.classList.remove('active');
+  });
+
+  const activeBtnId = ratio === '1:1' ? 'modal-ratio-1-1' :
+                     ratio === '4:3' ? 'modal-ratio-4-3' :
+                     ratio === '16:9' ? 'modal-ratio-16-9' :
+                     ratio === '9:16' ? 'modal-ratio-9-16' :
+                     'modal-ratio-' + ratio;
+  const btn = $('#' + activeBtnId);
+  if(btn) btn.classList.add('active');
+
+  const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
+  if(ratio === 'free'){
+    modalRatioVal = null;
+  } else if(ratio === '1:1'){
+    modalRatioVal = 1.0;
+  } else if(ratio === '4:3'){
+    modalRatioVal = 4 / 3;
+  } else if(ratio === '16:9'){
+    modalRatioVal = 16 / 9;
+  } else if(ratio === '9:16'){
+    modalRatioVal = 9 / 16;
+  } else if(ratio === 'slot'){
+    if(curLayout === 'B'){
+      const topPct = +V.B_TOP_PCT || 31;
+      const topH = 1920 * (topPct / 100);
+      modalRatioVal = 1080 / topH;
+    } else {
+      modalRatioVal = 16 / 9;
+    }
+  }
+
+  if(modalRatioVal && fcMonitor && fcMonitor.clientWidth && fcCropBox){
+    const mw = fcMonitor.clientWidth;
+    const mh = fcMonitor.clientHeight;
+    let curW = fcCropBox.offsetWidth;
+    let curH = Math.round(curW / modalRatioVal);
+    if(curH > mh){
+      curH = mh;
+      curW = Math.round(curH * modalRatioVal);
+    }
+    if(curW > mw){
+      curW = mw;
+      curH = Math.round(curW / modalRatioVal);
+    }
+    let curLeft = fcCropBox.offsetLeft;
+    let curTop = fcCropBox.offsetTop;
+    curLeft = Math.max(0, Math.min(mw - curW, curLeft));
+    curTop = Math.max(0, Math.min(mh - curH, curTop));
+
+    fcCropBox.style.width = curW + 'px';
+    fcCropBox.style.height = curH + 'px';
+    fcCropBox.style.left = curLeft + 'px';
+    fcCropBox.style.top = curTop + 'px';
+    updateFacecamCropReadout();
+  }
+}
+
+function setModalFitMode(mode){
+  modalFcFit = mode || 'cover';
+  $('#modal-fit-cover').classList.toggle('active', modalFcFit === 'cover');
+  $('#modal-fit-fit').classList.toggle('active', modalFcFit === 'fit');
+  $('#modal-fit-stretch').classList.toggle('active', modalFcFit === 'stretch');
+
+  const descEl = $('#modal-fit-mode-desc');
+  if(descEl){
+    if(modalFcFit === 'cover') descEl.textContent = 'Cover (fills entire slot, crops edges, no black bars)';
+    else if(modalFcFit === 'fit') descEl.textContent = 'Fit (preserves exact ratio, adds black letterbox bars)';
+    else if(modalFcFit === 'stretch') descEl.textContent = 'Stretch (forces video to 100% width & height of slot)';
+  }
+  updateModalLivePreview();
+}
+
 function loadRealFacecamFrame(videoPath){
   $('#modal-fc-monitor-wrap').style.display = 'block';
   fcPlaceholder.style.display = 'flex';
@@ -1898,6 +2113,7 @@ function loadRealFacecamFrame(videoPath){
     modalFcNaturalH = fcImg.naturalHeight || 1080;
     $('#modal-fc-res-text').textContent = `Source: ${modalFcNaturalW}×${modalFcNaturalH}`;
     initFacecamFramingBox();
+    updateModalLivePreview();
   };
   fcImg.onerror = () => {
     fcPlaceholder.style.display = 'flex';
@@ -1906,8 +2122,8 @@ function loadRealFacecamFrame(videoPath){
 }
 
 function initFacecamFramingBox(){
-  const mw = fcMonitor.clientWidth || 480;
-  const mh = fcMonitor.clientHeight || (mw * 9 / 16);
+  const mw = fcMonitor.clientWidth || 320;
+  const mh = fcMonitor.clientHeight || 240;
   const scaleX = mw / modalFcNaturalW;
   const scaleY = mh / modalFcNaturalH;
 
@@ -1922,9 +2138,9 @@ function initFacecamFramingBox(){
     fcCropBox.style.width = bw + 'px';
     fcCropBox.style.height = bh + 'px';
   } else {
-    // Default: centered 4:3 / 16:10 framing box over the facecam
-    const defW = Math.round(modalFcNaturalH * 1.15);
-    const defH = Math.round(modalFcNaturalH * 0.88);
+    // Default: centered 4:3 / 16:9 framing box over the facecam
+    const defW = Math.round(Math.min(modalFcNaturalW, modalFcNaturalH * 1.1));
+    const defH = Math.round(Math.min(modalFcNaturalH, defW * 0.85));
     const defX = Math.round((modalFcNaturalW - defW) / 2);
     const defY = Math.round((modalFcNaturalH - defH) / 2);
 
@@ -1934,11 +2150,12 @@ function initFacecamFramingBox(){
     fcCropBox.style.height = Math.round(defH * scaleY) + 'px';
   }
   updateFacecamCropReadout();
+  updateModalLivePreview();
 }
 
 function updateFacecamCropReadout(){
-  const mw = fcMonitor.clientWidth || 480;
-  const mh = fcMonitor.clientHeight || 270;
+  const mw = fcMonitor.clientWidth || 320;
+  const mh = fcMonitor.clientHeight || 240;
   const scaleX = mw / modalFcNaturalW;
   const scaleY = mh / modalFcNaturalH;
 
@@ -1956,6 +2173,168 @@ function updateFacecamCropReadout(){
   modalFcCropCoords = {w: srcW, h: srcH, x: srcX, y: srcY};
   fcCropSub.textContent = `${srcW}×${srcH}`;
   $('#modal-fc-coords-text').textContent = `Crop: ${srcW}×${srcH} at (${srcX}, ${srcY})`;
+  updateModalLivePreview();
+}
+
+/* Real-Time Live Short Output Preview in Modal */
+function updateModalLivePreview(){
+  const canvas = $('#modal-live-preview-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = 270;
+  const H = 480;
+
+  // Clear background
+  ctx.fillStyle = '#0a0b0d';
+  ctx.fillRect(0, 0, W, H);
+
+  const curLayout = $('#edit-clip-layout') ? $('#edit-clip-layout').value : 'B';
+  const curHook = $('#edit-clip-hook') ? $('#edit-clip-hook').value : '';
+
+  if(curLayout === 'B'){
+    const topPct = +V.B_TOP_PCT || 31;
+    const topH = Math.round(H * topPct / 100);
+    const botH = H - topH;
+    const divH = Math.max(2, Math.round((+V.B_DIV_PX || 8) * (H / 1920)));
+    const divColor = V.B_DIV_COLOR ? V.B_DIV_COLOR.replace('0x', '#') : '#ffd23f';
+
+    // 1. Draw Top Facecam Slot
+    if(modalFcActive && modalFcCropCoords && fcImg && fcImg.complete && fcImg.naturalWidth){
+      const sx = modalFcCropCoords.x;
+      const sy = modalFcCropCoords.y;
+      const sw = modalFcCropCoords.w;
+      const sh = modalFcCropCoords.h;
+
+      if(modalFcFit === 'stretch'){
+        ctx.drawImage(fcImg, sx, sy, sw, sh, 0, 0, W, topH);
+      } else if(modalFcFit === 'fit'){
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, W, topH);
+        const scale = Math.min(W / sw, topH / sh);
+        const dw = sw * scale;
+        const dh = sh * scale;
+        const dx = (W - dw) / 2;
+        const dy = (topH - dh) / 2;
+        ctx.drawImage(fcImg, sx, sy, sw, sh, dx, dy, dw, dh);
+      } else {
+        // cover (default)
+        const scale = Math.max(W / sw, topH / sh);
+        const dw = sw * scale;
+        const dh = sh * scale;
+        const dx = (W - dw) / 2;
+        const dy = (topH - dh) / 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, W, topH);
+        ctx.clip();
+        ctx.drawImage(fcImg, sx, sy, sw, sh, dx, dy, dw, dh);
+        ctx.restore();
+      }
+    } else {
+      ctx.fillStyle = '#1e232d';
+      ctx.fillRect(0, 0, W, topH);
+      ctx.fillStyle = '#8e94a0';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(modalFcActive ? 'Loading Facecam...' : 'No Facecam Active', W / 2, topH / 2);
+    }
+
+    // 2. Draw Bottom Gameplay Slot
+    if(frameImg && frameImg.complete && frameImg.naturalWidth){
+      const natW = frameImg.naturalWidth;
+      const natH = frameImg.naturalHeight;
+      let cw = natH * (W / botH);
+      let ch = natH;
+      if(cw > natW){
+        cw = natW;
+        ch = natW * (botH / W);
+      }
+      let cx = (natW - cw) / 2;
+      ctx.drawImage(frameImg, cx, 0, cw, ch, 0, topH, W, botH);
+    } else {
+      ctx.fillStyle = '#14171d';
+      ctx.fillRect(0, topH, W, botH);
+      ctx.fillStyle = '#8e94a0';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Gameplay Video', W / 2, topH + botH / 2);
+    }
+
+    // 3. Draw Divider Line
+    ctx.fillStyle = divColor;
+    ctx.fillRect(0, topH - Math.floor(divH / 2), W, divH);
+
+    // 4. Draw Hook Text Headline
+    if(curHook.trim()){
+      ctx.save();
+      ctx.font = '900 15px Anton, Impact, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 4;
+      const hookY = Math.min(H - 40, topH + 28);
+      ctx.strokeText(curHook.toUpperCase(), W / 2, hookY);
+      ctx.fillText(curHook.toUpperCase(), W / 2, hookY);
+      ctx.restore();
+    }
+  } else {
+    // Layout A
+    if(frameImg && frameImg.complete && frameImg.naturalWidth){
+      ctx.drawImage(frameImg, 0, 0, W, H);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, 0, W, H);
+
+      const panelH = Math.round(H * 0.58);
+      const panelY = Math.round((H - panelH) / 2);
+      ctx.drawImage(frameImg, 0, 0, frameImg.naturalWidth, frameImg.naturalHeight, 0, panelY, W, panelH);
+    }
+
+    const fcW = 90;
+    const fcH = 65;
+    const fcX = W - fcW - 12;
+    const fcY = H - fcH - 24;
+
+    if(modalFcActive && modalFcCropCoords && fcImg && fcImg.complete && fcImg.naturalWidth){
+      const sx = modalFcCropCoords.x;
+      const sy = modalFcCropCoords.y;
+      const sw = modalFcCropCoords.w;
+      const sh = modalFcCropCoords.h;
+      ctx.save();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(fcX, fcY, fcW, fcH);
+      if(modalFcFit === 'stretch'){
+        ctx.drawImage(fcImg, sx, sy, sw, sh, fcX, fcY, fcW, fcH);
+      } else {
+        const scale = Math.max(fcW / sw, fcH / sh);
+        const dw = sw * scale;
+        const dh = sh * scale;
+        const dx = fcX + (fcW - dw) / 2;
+        const dy = fcY + (fcH - dh) / 2;
+        ctx.beginPath();
+        ctx.rect(fcX, fcY, fcW, fcH);
+        ctx.clip();
+        ctx.drawImage(fcImg, sx, sy, sw, sh, dx, dy, dw, dh);
+      }
+      ctx.strokeStyle = '#ffd23f';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(fcX, fcY, fcW, fcH);
+      ctx.restore();
+    }
+
+    if(curHook.trim()){
+      ctx.save();
+      ctx.font = '900 15px Anton, Impact, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 4;
+      ctx.strokeText(curHook.toUpperCase(), W / 2, 50);
+      ctx.fillText(curHook.toUpperCase(), W / 2, 50);
+      ctx.restore();
+    }
+  }
 }
 
 // Drag & Resize logic for Facecam Framing Box in Modal
@@ -1986,8 +2365,8 @@ fcCropHandle.addEventListener('pointerdown', e => {
 
 window.addEventListener('pointermove', e => {
   if(isDraggingFcCrop){
-    const mw = fcMonitor.clientWidth || 480;
-    const mh = fcMonitor.clientHeight || 270;
+    const mw = fcMonitor.clientWidth || 320;
+    const mh = fcMonitor.clientHeight || 240;
     let newLeft = fcStartLeft + (e.clientX - fcStartX);
     let newTop = fcStartTop + (e.clientY - fcStartY);
     newLeft = Math.max(0, Math.min(mw - fcCropBox.offsetWidth, newLeft));
@@ -1997,15 +2376,30 @@ window.addEventListener('pointermove', e => {
     fcCropBox.style.top = newTop + 'px';
     updateFacecamCropReadout();
   } else if(isResizingFcCrop){
-    const mw = fcMonitor.clientWidth || 480;
-    const mh = fcMonitor.clientHeight || 270;
-    let newW = fcStartW + (e.clientX - fcStartX);
-    let newH = fcStartH + (e.clientY - fcStartY);
-    newW = Math.max(40, Math.min(mw - fcCropBox.offsetLeft, newW));
-    newH = Math.max(40, Math.min(mh - fcCropBox.offsetTop, newH));
+    const mw = fcMonitor.clientWidth || 320;
+    const mh = fcMonitor.clientHeight || 240;
 
-    fcCropBox.style.width = newW + 'px';
-    fcCropBox.style.height = newH + 'px';
+    if(modalActiveRatio !== 'free' && modalRatioVal){
+      let newW = fcStartW + (e.clientX - fcStartX);
+      let newH = Math.round(newW / modalRatioVal);
+      if(fcCropBox.offsetLeft + newW > mw){
+        newW = mw - fcCropBox.offsetLeft;
+        newH = Math.round(newW / modalRatioVal);
+      }
+      if(fcCropBox.offsetTop + newH > mh){
+        newH = mh - fcCropBox.offsetTop;
+        newW = Math.round(newH * modalRatioVal);
+      }
+      newW = Math.max(30, newW);
+      newH = Math.max(30, newH);
+      fcCropBox.style.width = newW + 'px';
+      fcCropBox.style.height = newH + 'px';
+    } else {
+      let newW = Math.max(30, Math.min(mw - fcCropBox.offsetLeft, fcStartW + (e.clientX - fcStartX)));
+      let newH = Math.max(30, Math.min(mh - fcCropBox.offsetTop, fcStartH + (e.clientY - fcStartY)));
+      fcCropBox.style.width = newW + 'px';
+      fcCropBox.style.height = newH + 'px';
+    }
     updateFacecamCropReadout();
   }
 });
@@ -2026,32 +2420,37 @@ $('#modal-fc-preset-left').onclick = () => {
   updateFacecamCropReadout();
 };
 $('#modal-fc-preset-center').onclick = () => {
-  const mw = fcMonitor.clientWidth || 480;
+  const mw = fcMonitor.clientWidth || 320;
   fcCropBox.style.left = Math.round((mw - fcCropBox.offsetWidth) / 2) + 'px';
   updateFacecamCropReadout();
 };
 $('#modal-fc-preset-right').onclick = () => {
-  const mw = fcMonitor.clientWidth || 480;
+  const mw = fcMonitor.clientWidth || 320;
   fcCropBox.style.left = (mw - fcCropBox.offsetWidth) + 'px';
   updateFacecamCropReadout();
 };
 $('#modal-fc-preset-face').onclick = () => {
-  const mh = fcMonitor.clientHeight || 270;
-  const mw = fcMonitor.clientWidth || 480;
-  const size = Math.round(mh * 0.85);
+  const mh = fcMonitor.clientHeight || 240;
+  const mw = fcMonitor.clientWidth || 320;
+  const size = Math.round(Math.min(mw, mh) * 0.85);
   fcCropBox.style.width = size + 'px';
   fcCropBox.style.height = size + 'px';
   fcCropBox.style.left = Math.round((mw - size) / 2) + 'px';
   fcCropBox.style.top = Math.round((mh - size) / 2) + 'px';
+  setModalCropRatio('1:1');
   updateFacecamCropReadout();
 };
 $('#modal-fc-preset-wide').onclick = () => {
-  const mh = fcMonitor.clientHeight || 270;
-  const mw = fcMonitor.clientWidth || 480;
-  fcCropBox.style.width = Math.round(mw * 0.9) + 'px';
-  fcCropBox.style.height = Math.round(mh * 0.9) + 'px';
-  fcCropBox.style.left = Math.round(mw * 0.05) + 'px';
-  fcCropBox.style.top = Math.round(mh * 0.05) + 'px';
+  const mh = fcMonitor.clientHeight || 240;
+  const mw = fcMonitor.clientWidth || 320;
+  const curRatio = modalRatioVal || (16 / 9);
+  let w = Math.round(mw * 0.95);
+  let h = Math.round(w / curRatio);
+  if(h > mh){ h = mh; w = Math.round(h * curRatio); }
+  fcCropBox.style.width = w + 'px';
+  fcCropBox.style.height = h + 'px';
+  fcCropBox.style.left = Math.round((mw - w) / 2) + 'px';
+  fcCropBox.style.top = Math.round((mh - h) / 2) + 'px';
   updateFacecamCropReadout();
 };
 
@@ -2068,6 +2467,7 @@ function applyModalEditsToClip(){
 
   if(modalFcActive && modalFcPath){
     c.facecam = modalFcPath;
+    c.facecam_fit = modalFcFit || 'cover';
     if(modalFcCropCoords){
       c.fc_crop_coords = modalFcCropCoords;
       c.facecam_crop = `${modalFcCropCoords.w}:${modalFcCropCoords.h}:${modalFcCropCoords.x}:${modalFcCropCoords.y}`;
@@ -2077,6 +2477,7 @@ function applyModalEditsToClip(){
   } else {
     c.facecam = '';
     c.facecam_crop = '';
+    c.facecam_fit = 'cover';
     c.fc_crop_coords = null;
   }
 }
